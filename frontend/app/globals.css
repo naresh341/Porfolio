@@ -175,3 +175,22 @@ html {
     offset-distance: 100%;
   }
 }
+
+/* ── Marquee for project cards ── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+.outline-text {
+  -webkit-text-stroke: 1px currentColor;
+  color: transparent;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}

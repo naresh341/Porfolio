@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 // --- Internal Types and Defaults ---
 
@@ -88,6 +88,11 @@ export const LimelightNav = ({
   const navItemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const limelightRef = useRef<HTMLDivElement | null>(null);
 
+  // Sync active index if prop changes (e.g. on navigation)
+  useEffect(() => {
+    setActiveIndex(defaultActiveIndex);
+  }, [defaultActiveIndex]);
+
   useLayoutEffect(() => {
     if (items.length === 0) return;
 
@@ -124,7 +129,9 @@ export const LimelightNav = ({
       {items.map(({ id, icon, label, onClick }, index) => (
         <a
           key={id}
-          ref={(el) => (navItemRefs.current[index] = el)}
+          ref={(el) => {
+            navItemRefs.current[index] = el;
+          }}
           className={`relative z-20 flex h-full cursor-pointer items-center justify-center p-5 ${iconContainerClassName}`}
           onClick={() => handleItemClick(index, onClick)}
           aria-label={label}

@@ -6,17 +6,21 @@ import { LimelightNav } from "@/components/limelight-nav";
 import {
   Bookmark,
   Command,
+  ExpandIcon,
   Home,
   Moon,
+  Phone,
   PlusCircle,
   Sun,
-  User,
 } from "lucide-react";
 import { useTheme } from "@/app/Context/ThemeContext";
+import { usePathname, useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,20 +32,55 @@ const Navbar = () => {
   }, []);
 
   const navItems = [
-    { id: "home", icon: <Home />, label: "Home" },
-    { id: "about", icon: <Bookmark />, label: "About" },
-    { id: "work", icon: <PlusCircle />, label: "Work" },
-    { id: "more", icon: <User />, label: "More" },
+    {
+      id: "home",
+      icon: <Home />,
+      label: "Home",
+      onClick: () => router.push("/"),
+    },
+    {
+      id: "about",
+      icon: <Bookmark />,
+      label: "About",
+      onClick: () => router.push("/about"),
+    },
+    {
+      id: "project",
+      icon: <PlusCircle />,
+      label: "Project",
+      onClick: () => router.push("/projects"),
+    },
+    {
+      id: "experience",
+      icon: <ExpandIcon />,
+      label: "Experience",
+      onClick: () => router.push("/experience"),
+    },
+    {
+      id: "contact",
+      icon: <Phone />,
+      label: "Contact",
+      onClick: () => router.push("/contact"),
+    },
   ];
+
+  // Map pathname to active index for LimelightNav
+  const activeIndex = navItems.findIndex((item) => {
+    if (item.id === "home") return pathname === "/";
+    return pathname.startsWith(
+      `/${item.id === "project" ? "projects" : item.id}`,
+    );
+  });
 
   return (
     <>
-      <div className="sticky  top-0 left-0 w-full z-40  py-4 flex justify-between items-center">
+      <div className="sticky top-0 left-0 w-full z-40 py-4 flex justify-between items-center">
         <div className="flex items-center gap-4 min-w-[120px]">
           <div
-            className={`font-semibold transition-all duration-500 ${
+            className={`font-semibold transition-all duration-500 cursor-pointer ${
               isScrolled ? "scale-110" : "scale-100"
             }`}
+            onClick={() => router.push("/")}
           >
             NA
           </div>
@@ -101,7 +140,10 @@ const Navbar = () => {
         className="fixed top-4 z-50"
       >
         <div className="flex items-center bg-card/80 backdrop-blur-xl border border-border rounded-xl shadow-xl overflow-hidden">
-          <LimelightNav items={navItems} />
+          <LimelightNav
+            items={navItems}
+            defaultActiveIndex={activeIndex === -1 ? 0 : activeIndex}
+          />
 
           <span className="w-px h-6 bg-border" />
 

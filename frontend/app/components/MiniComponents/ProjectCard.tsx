@@ -1,267 +1,303 @@
 "use client";
 
-import { ArrowUpRight, GitBranchMinus, Globe, Plus } from "lucide-react";
-import { useRef } from "react";
+import { ArrowUpRight, GitBranch, ExternalLink } from "lucide-react";
+import { useRef, useState } from "react";
+import { TECH_ICONS } from "./TechIcons";
 
-export default function projectCard({
+interface Project {
+  name: string;
+  description: string;
+  highlights: string[];
+  tags: string[];
+  color: string;
+  role?: string;
+  desktop?: string;
+}
+
+export default function ProjectCard({
   project,
   index,
   total,
 }: {
-  project: any;
+  project: Project;
   index: number;
   total: number;
 }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
-  const accent = `hsl(${project.accent})`;
+  const panelRef = useRef<HTMLDivElement>(null);
+  const spotlightRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
 
-  const onMove = (e: React.MouseEvent) => {
-    const el = cardRef.current;
-    const glow = glowRef.current;
-    if (!el) return;
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = panelRef.current;
+    const spot = spotlightRef.current;
+    if (!el || !spot) return;
     const r = el.getBoundingClientRect();
     const x = e.clientX - r.left;
     const y = e.clientY - r.top;
-    if (glow) {
-      glow.style.background = `radial-gradient(420px circle at ${x}px ${y}px, ${accent.replace(")", " / 0.18)")}, transparent 55%)`;
-    }
-    el.querySelectorAll<HTMLElement>("[data-parallax]").forEach((p) => {
-      const depth = Number(p.dataset.parallax || 10);
-      const dx = (x / r.width - 0.5) * depth;
-      const dy = (y / r.height - 0.5) * depth;
-      p.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+    spot.style.left = `${x}px`;
+    spot.style.top = `${y}px`;
+    el.querySelectorAll<HTMLElement>("[data-depth]").forEach((p) => {
+      const d = Number(p.dataset.depth ?? 0);
+      const dx = (x / r.width - 0.5) * d;
+      const dy = (y / r.height - 0.5) * d;
+      p.style.transform = `translate3d(${dx}px,${dy}px,0)`;
     });
   };
-
+  const onEnter = () => setHovered(true);
   const onLeave = () => {
-    cardRef.current
-      ?.querySelectorAll<HTMLElement>("[data-parallax]")
-      .forEach((p) => {
-        p.style.transform = "translate3d(0,0,0)";
-      });
-    if (glowRef.current) glowRef.current.style.background = "transparent";
+    setHovered(false);
+    panelRef.current
+      ?.querySelectorAll<HTMLElement>("[data-depth]")
+      .forEach((p) => (p.style.transform = "translate3d(0,0,0)"));
   };
 
+  const num = String(index + 1).padStart(2, "0");
+  const totalStr = String(total).padStart(2, "0");
+
   return (
-    <section className="project-panel relative shrink-0 w-screen h-screen flex items-center justify-center px-6 lg:px-16">
-      {/* Background ambient blob */}
+    <section className="project-panel relative shrink-0 w-screen h-screen flex items-center justify-center overflow-hidden bg-background">
+      {/* Per-project ambient glow */}
       <div
-        className="absolute inset-0 opacity-60 pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: `radial-gradient(ellipse 55% 55% at 72% 50%, ${project.color}12, transparent 70%)` }}
+        aria-hidden
+      />
+      {/* Fine grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background: `radial-gradient(60% 50% at 70% 50%, ${accent.replace(")", " / 0.15)")}, transparent 70%)`,
+          backgroundImage: "linear-gradient(hsl(var(--border)) 1px,transparent 1px),linear-gradient(90deg,hsl(var(--border)) 1px,transparent 1px)",
+          backgroundSize: "60px 60px",
+          opacity: 0.18,
         }}
         aria-hidden
       />
+      {/* Mouse spotlight */}
       <div
-        className="absolute inset-0 bg-grid-faint opacity-[0.35] pointer-events-none"
+        ref={spotlightRef}
+        className="pointer-events-none absolute z-0 -translate-x-1/2 -translate-y-1/2 rounded-full transition-opacity duration-300"
+        style={{
+          width: 600,
+          height: 600,
+          background: `radial-gradient(circle, ${project.color}08 0%, transparent 70%)`,
+          opacity: hovered ? 1 : 0,
+        }}
         aria-hidden
       />
 
+      {/* Main grid */}
       <div
-        ref={cardRef}
+        ref={panelRef}
         onMouseMove={onMove}
+        onMouseEnter={onEnter}
         onMouseLeave={onLeave}
-        className="relative w-full max-w-7xl grid grid-cols-12 gap-6 lg:gap-10"
+        className="panel-inner relative w-full max-w-[1400px] mx-auto px-8 lg:px-16 grid grid-cols-12 gap-6 lg:gap-14 items-center h-full pt-11"
       >
-        {/* cursor glow overlay */}
-        <div
-          ref={glowRef}
-          className="absolute inset-0 rounded-3xl pointer-events-none transition-[background] duration-200"
-        />
-
-        {/* LEFT META */}
-        <div className="col-span-12 md:col-span-5 flex flex-col justify-between py-4 relative z-10">
-          <div className="space-y-7">
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] tracking-[0.3em] text-muted-foreground uppercase">
-                {/* / Project {String(index + 1).padStart(2, "0")} —{" "} */}
-                {/* {String(projects.length).padStart(2, "0")} */}
-              </span>
-              <span className="h-px w-10" style={{ background: accent }} />
-            </div>
-
-            {/* Title with stroked echo */}
-            <div className="relative" data-parallax="14">
-              <h2
-                aria-hidden
-                className="absolute -top-3 -left-1 text-6xl lg:text-8xl font-black tracking-tighter text-stroke select-none"
-              >
-                {project.name}
-              </h2>
-              <h2 className="relative text-6xl lg:text-8xl font-black tracking-tighter text-foreground hover-glitch">
-                {project.name}
-              </h2>
-            </div>
-
-            <p
-              className="text-muted-foreground text-base lg:text-lg max-w-md font-light leading-relaxed"
-              data-parallax="6"
-            >
-              {project.description}
-            </p>
-
-            <ul className="space-y-2 max-w-md">
-              {project.highlights.slice(0, 3).map((h) => (
-                <li
-                  key={h}
-                  className="flex items-start gap-3 text-sm text-foreground/85"
-                >
-                  <span
-                    className="mt-2 h-1.5 w-1.5 rounded-full shrink-0"
-                    style={{ background: accent }}
-                  />
-                  <span>{h}</span>
-                </li>
-              ))}
-            </ul>
+        {/* ── LEFT ──────────────────────────────── */}
+        <div className="col-span-12 lg:col-span-5 flex flex-col gap-5 relative z-10">
+          {/* Index */}
+          <div className="flex items-center gap-3" data-reveal>
+            <span className="font-mono text-xs font-bold" style={{ color: project.color }}>{num}</span>
+            <span className="h-px w-8" style={{ background: project.color, opacity: 0.4 }} />
+            <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-muted-foreground">{totalStr} Projects</span>
           </div>
 
-          <div className="mt-10 space-y-4">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-              Tech Stack
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {project.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs text-foreground/90 bg-card/60 border border-border/60 px-3 py-1.5 rounded-full backdrop-blur-sm hover:border-foreground/40 transition"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+          {/* Name */}
+          <div data-reveal data-depth="10">
+            <h2 className="text-[clamp(2.8rem,5vw,5.2rem)] font-black tracking-tighter leading-[0.88] text-foreground">
+              {project.name}
+            </h2>
+            {project.role && (
+              <p className="mt-1.5 text-[11px] tracking-[0.3em] uppercase text-muted-foreground">{project.role}</p>
+            )}
+          </div>
 
-            <div className="flex items-center gap-3 pt-4">
-              <a
-                href="#"
-                className="group inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium text-background transition"
-                style={{ background: accent }}
-              >
-                Visit Live
-                <Globe className="h-4 w-4 transition-transform group-hover:rotate-12" />
-              </a>
-              <a
-                href="#"
-                className="group inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium border border-border/70 text-foreground hover:bg-card/60 transition"
-              >
-                Repository
-                <GitBranchMinus className="h-4 w-4" />
-              </a>
+          {/* Description */}
+          <p className="text-muted-foreground text-sm leading-relaxed max-w-[44ch]" data-reveal data-depth="5">
+            {project.description}
+          </p>
+
+          {/* Highlights */}
+          <ul className="space-y-2" data-reveal>
+            {project.highlights.slice(0, 3).map((h, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-[13px] text-foreground/75">
+                <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: project.color }} />
+                {h}
+              </li>
+            ))}
+          </ul>
+
+          <div className="h-px w-full bg-border" data-reveal />
+
+          {/* Tech stack with icons */}
+          <div data-reveal>
+            <p className="text-[9px] tracking-[0.4em] uppercase text-muted-foreground mb-3">Tech Stack</p>
+            <div className="flex flex-wrap gap-2">
+              {project.tags.map((tag) => {
+                const tech = TECH_ICONS[tag];
+                return (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border tracking-wide transition-all duration-200 cursor-default hover:scale-105"
+                    style={{
+                      borderColor: tech ? `${tech.color}35` : "hsl(var(--border))",
+                      color: tech?.color ?? "hsl(var(--foreground))",
+                      background: tech ? `${tech.color}0d` : "hsl(var(--muted))",
+                    }}
+                  >
+                    {tech?.icon}
+                    {tag}
+                  </span>
+                );
+              })}
             </div>
+          </div>
+
+          {/* CTA */}
+          <div className="flex items-center gap-3" data-reveal>
+            <a
+              href="#"
+              className="group inline-flex items-center gap-2 px-5 py-2.5 text-[11px] font-bold tracking-[0.15em] uppercase rounded-sm transition-all duration-200 hover:scale-[1.02]"
+              style={{ background: project.color, color: "#000" }}
+            >
+              Visit Live <ExternalLink className="h-3 w-3" />
+            </a>
+            <a
+              href="#"
+              className="group inline-flex items-center gap-2 px-5 py-2.5 border border-border text-foreground text-[11px] font-bold tracking-[0.15em] uppercase rounded-sm hover:bg-muted transition-all duration-200"
+            >
+              Source <GitBranch className="h-3 w-3" />
+            </a>
           </div>
         </div>
 
-        {/* RIGHT MOCKUPS */}
-        <div className="col-span-12 md:col-span-7 grid grid-cols-6 grid-rows-6 gap-3 lg:gap-4 h-[78vh] relative z-10">
-          {/* Main desktop */}
+        {/* ── RIGHT: Mockup ──────────────── */}
+        <div className="hidden lg:flex col-span-7 h-[76vh] flex-col gap-3 relative z-10" data-depth="16">
+          {/* Browser frame */}
           <div
-            className="col-span-6 row-span-4 rounded-2xl overflow-hidden border border-border/50 relative group"
-            data-parallax="18"
-            style={{
-              boxShadow: `0 40px 100px -30px ${accent.replace(")", " / 0.45)")}`,
-            }}
+            className="relative flex-1 rounded-xl overflow-hidden border border-border/60 bg-card flex flex-col"
+            style={{ boxShadow: `0 0 0 1px ${project.color}1a, 0 40px 80px -20px ${project.color}15` }}
           >
-            <div className="absolute top-0 left-0 right-0 h-7 bg-card/80 backdrop-blur flex items-center gap-1.5 px-3 z-10 border-b border-border/40">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
-              <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/80" />
-              <span className="h-2.5 w-2.5 rounded-full bg-green-500/80" />
-              <span className="ml-3 text-[10px] text-muted-foreground tracking-wider truncate">
-                {project.name.toLowerCase()}.app
-              </span>
-            </div>
-            <img
-              src={project.desktop}
-              alt={`${project.name} desktop preview`}
-              loading={index === 0 ? "eager" : "lazy"}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            {/* gradient overlay */}
-            <div
-              className="absolute inset-0 mix-blend-overlay opacity-40 pointer-events-none"
-              style={{
-                background: `linear-gradient(135deg, ${accent.replace(")", " / 0.4)")}, transparent)`,
-              }}
-            />
-          </div>
-
-          {/* Mobile 1 */}
-          <div
-            className="col-span-2 row-span-2 rounded-2xl overflow-hidden border border-border/50 relative group bg-card"
-            data-parallax="24"
-          >
-            <img
-              src={project.mobile1}
-              alt=""
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
-              <div className="text-[10px] uppercase tracking-widest text-white/80">
-                Mobile · Home
+            {/* Chrome bar */}
+            <div className="shrink-0 h-8 bg-muted border-b border-border flex items-center gap-1.5 px-4">
+              <span className="h-2 w-2 rounded-full" style={{ background: `${project.color}70` }} />
+              <span className="h-2 w-2 rounded-full bg-border" />
+              <span className="h-2 w-2 rounded-full bg-border" />
+              <div className="ml-3 flex-1 max-w-[200px] h-4 bg-background/80 rounded flex items-center px-2.5">
+                <span className="text-[9px] text-muted-foreground tracking-wider">{project.name.toLowerCase()}.app</span>
+              </div>
+              {/* Live indicator */}
+              <div className="ml-auto flex items-center gap-1.5 mr-1">
+                <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: project.color }} />
+                <span className="text-[8px] text-muted-foreground tracking-wider">Live</span>
               </div>
             </div>
-          </div>
 
-          {/* Mobile 2 */}
-          <div
-            className="col-span-2 row-span-2 rounded-2xl overflow-hidden border border-border/50 relative group bg-card"
-            data-parallax="24"
-          >
-            <img
-              src={project.mobile2}
-              alt=""
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
-              <div className="text-[10px] uppercase tracking-widest text-white/80">
-                Mobile · Detail
-              </div>
-            </div>
-          </div>
-
-          {/* Stat / CTA tile */}
-          <div
-            className="col-span-2 row-span-2 rounded-2xl border border-border/50 relative overflow-hidden p-4 flex flex-col justify-between"
-            data-parallax="20"
-            style={{
-              background: `linear-gradient(160deg, ${accent.replace(")", " / 0.18)")}, transparent)`,
-            }}
-          >
-            <div className="flex items-start justify-between">
-              <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground">
-                Case Study
-              </span>
-              <Plus className="h-4 w-4 text-foreground/70" />
-            </div>
-            <div>
+            {/* Mockup content */}
+            <div className="flex-1 relative overflow-hidden">
+              {/* Dot grid */}
               <div
-                className="text-4xl font-black tracking-tighter"
-                style={{ color: accent }}
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `radial-gradient(${project.color}0a 1px, transparent 1px)`,
+                  backgroundSize: "24px 24px",
+                }}
+              />
+              {/* Ghost letter */}
+              <div
+                className="absolute -right-4 top-1/2 -translate-y-1/2 font-black leading-none select-none pointer-events-none"
+                style={{ fontSize: "18vw", color: project.color, opacity: 0.035, letterSpacing: "-0.05em" }}
               >
-                {/* 0{index + 1} */}
+                {project.name[0]}
               </div>
-              <button className="mt-2 inline-flex items-center gap-1.5 text-xs text-foreground/80 hover:text-foreground transition">
-                Read more <ArrowUpRight className="h-3.5 w-3.5" />
-              </button>
+
+              {/* Abstract UI wireframe */}
+              <div className="absolute inset-0 p-8 flex flex-col gap-4">
+                {/* Top nav bar */}
+                <div className="flex items-center gap-3">
+                  <div className="h-7 w-28 rounded" style={{ background: `${project.color}20` }} />
+                  <div className="flex-1 flex gap-2 justify-end">
+                    {[60, 48, 52].map((w, i) => (
+                      <div key={i} className="h-5 rounded" style={{ width: w, background: `${project.color}12` }} />
+                    ))}
+                    <div className="h-7 w-20 rounded" style={{ background: `${project.color}30` }} />
+                  </div>
+                </div>
+
+                {/* Hero band */}
+                <div className="h-32 rounded-lg relative overflow-hidden" style={{ background: `${project.color}18`, borderColor: `${project.color}25`, border: "1px solid" }}>
+                  <div className="absolute inset-0 flex flex-col justify-center px-6 gap-2">
+                    <div className="h-5 w-48 rounded" style={{ background: `${project.color}40` }} />
+                    <div className="h-3 w-72 rounded" style={{ background: `${project.color}20` }} />
+                    <div className="h-3 w-60 rounded" style={{ background: `${project.color}15` }} />
+                    <div className="mt-2 h-7 w-28 rounded" style={{ background: `${project.color}60` }} />
+                  </div>
+                </div>
+
+                {/* Card grid */}
+                <div className="grid grid-cols-3 gap-3 flex-1">
+                  {[0.9, 0.6, 0.75, 0.85, 0.5, 0.7].map((o, i) => (
+                    <div
+                      key={i}
+                      className="rounded-lg"
+                      style={{
+                        background: `${project.color}${Math.round(o * 18).toString(16).padStart(2, "0")}`,
+                        border: `1px solid ${project.color}20`,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* 3-tile bottom row */}
+          <div className="shrink-0 grid grid-cols-3 gap-3 h-[120px]">
+            <div className="rounded-xl border border-border bg-card p-4 flex flex-col justify-between">
+              <span className="text-[9px] tracking-[0.3em] uppercase text-muted-foreground">Role</span>
+              <div>
+                <p className="text-foreground font-semibold text-sm">{project.role ?? "Full-stack"}</p>
+                <p className="text-muted-foreground text-[10px]">Design & Engineering</p>
+              </div>
+            </div>
+            <div
+              className="rounded-xl border p-4 flex flex-col justify-between"
+              style={{ borderColor: `${project.color}30`, background: `${project.color}08` }}
+            >
+              <span className="text-[9px] tracking-[0.3em] uppercase text-muted-foreground">Stack</span>
+              <div>
+                <p className="font-black text-2xl tracking-tighter" style={{ color: project.color }}>{project.tags.length}</p>
+                <p className="text-muted-foreground text-[10px]">technologies</p>
+              </div>
+            </div>
+            <a
+              href="#"
+              className="group rounded-xl border border-border bg-card p-4 flex flex-col justify-between hover:border-foreground/25 transition-all duration-300 cursor-pointer"
+            >
+              <span className="text-[9px] tracking-[0.3em] uppercase text-muted-foreground">Case Study</span>
+              <div className="flex items-end justify-between">
+                <p className="text-foreground font-semibold text-sm">View Project</p>
+                <div
+                  className="w-7 h-7 rounded-full border border-border flex items-center justify-center transition-all duration-300 group-hover:bg-foreground group-hover:border-foreground group-hover:text-background"
+                >
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </div>
+              </div>
+            </a>
           </div>
         </div>
       </div>
 
-      {/* Marquee tag strip */}
-      <div className="absolute bottom-6 left-0 right-0 overflow-hidden mask-fade-r pointer-events-none">
-        <div className="flex gap-10 animate-marquee whitespace-nowrap text-[11px] tracking-[0.3em] uppercase text-muted-foreground/60">
-          {Array.from({ length: 2 }).flatMap((_, k) =>
-            project.tags
-              .concat([project.name, "scroll →", "case study"])
-              .map((t, i) => (
-                <span key={`${k}-${i}`} className="flex items-center gap-10">
-                  {t}
-                  <span className="h-1 w-1 rounded-full bg-current" />
-                </span>
-              )),
+      {/* Bottom marquee */}
+      <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none border-t border-border/40">
+        <div className="flex gap-10 animate-marquee whitespace-nowrap py-2.5 text-[9px] tracking-[0.35em] uppercase text-muted-foreground/50">
+          {Array.from({ length: 4 }).flatMap((_, k) =>
+            [...project.tags, project.name, "scroll →"].map((t, i) => (
+              <span key={`${k}-${i}`} className="flex items-center gap-10">
+                {t}
+                <span className="h-0.5 w-0.5 rounded-full" style={{ background: project.color, opacity: 0.5 }} />
+              </span>
+            ))
           )}
         </div>
       </div>

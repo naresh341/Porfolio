@@ -1,20 +1,49 @@
 "use client";
+
+import AboutMe from "../components/ui/AboutMe";
+import Contact from "../components/ui/Contact";
+import { BentoWidgets, GithubActivity } from "../components/ui/DashboardWidgets";
+import ExperienceSection from "../components/ui/ExperienceSkills";
+import Footer from "../components/ui/Footer";
 import HeroSection from "../components/ui/HeroSection";
-import Navbar from "../components/ui/Navbar";
+import SkillsSection from "../components/ui/SkillsSection";
 import SubHeroSection from "../components/ui/SubHeroSection";
 import Workshowcase from "../components/ui/Workshowcase";
+import { useEffect } from "react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
 const Dashboard = () => {
+  useEffect(() => {
+    // Initial refresh
+    ScrollTrigger.refresh();
+
+    // Secondary refresh after a short delay for font/image loading
+    const timer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <>
-      <div className="flex flex-col px-6">
-        <Navbar />
+      <main className="flex flex-col">
+        <HeroSection />
+        <SubHeroSection />
+      </main>
 
-        <main>
-          <HeroSection />
-          <SubHeroSection />
-          <Workshowcase />
-        </main>
-      </div>
+      {/* Main Sections */}
+      <AboutMe />
+      <Workshowcase />
+      <ExperienceSection />
+      <SkillsSection />
+
+      {/* Reusable Data/Social Sections */}
+      <GithubActivity />
+      <BentoWidgets />
+
+      <Contact />
+      <Footer />
     </>
   );
 };

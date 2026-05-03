@@ -11,7 +11,7 @@ const SubHeroSection = () => {
   const time = useTime();
 
   return (
-    <div className="relative w-full py-14 dark:bg-black bg-white flex items-center justify-center">
+    <div className="relative w-full py-10 bg-background flex items-center justify-center">
       <div className="absolute border-white/20 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-50">
         <div className="relative isolate bg-transparent rounded-full w-65 h-65 lg:w-64 lg:h-64 xl:h-105 xl:w-105 mx-auto my-12 flex justify-center items-center group border border-zinc-300 shadow-xl dark:border-white/10 dark:shadow-none ">
           {/* Clock Dial */}
