@@ -1,532 +1,519 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { projectService, webhookService } from "@/app/services/api";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import {
-  ArrowUpRight,
-  GitBranch,
-  ExternalLink,
-  Star,
-  GitFork,
-} from "lucide-react";
+import { ExternalLink, GitBranch, Loader2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { TECH_ICONS } from "../MiniComponents/TechIcons";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-// Professional / freelance projects (linked to GitHub)
-const projects = [
-  {
-    index: "01",
-    name: "AxionFlow",
-    tagline: "AI-powered workflow automation platform",
-    description:
-      "A modular, AI-first workflow engine built to automate complex multi-step business processes. Features a drag-and-drop pipeline builder, real-time execution logs, and a plugin API.",
-    highlights: [
-      "AI Pipeline Builder",
-      "Real-time Logs",
-      "Plugin Architecture",
-    ],
-    tags: ["Next.js", "Python", "FastAPI", "PostgreSQL"],
-    color: "#6366f1",
-    github: "https://github.com/naresh341/AxionFlow",
-    live: null,
-    type: "Personal Project",
-    status: "In Progress",
-  },
-  {
-    index: "02",
-    name: "Deep Pocket Inspection",
-    tagline: "AI-driven visual defect detection system",
-    description:
-      "A computer-vision inspection system for manufacturing quality control. Leverages deep learning to detect surface defects in real-time from camera feeds with high accuracy.",
-    highlights: ["Computer Vision", "Real-time Detection", "CNN-based Model"],
-    tags: ["Python", "FastAPI", "React"],
-    color: "#10b981",
-    github: "https://github.com/naresh341/DeepPocketInspection",
-    live: null,
-    type: "ML / Vision",
-    status: "Completed",
-  },
-  {
-    index: "03",
-    name: "Doctor Appointment App",
-    tagline: "End-to-end clinic management system",
-    description:
-      "A full-stack appointment scheduling platform for clinics, featuring real-time slot management, patient records, and SMS notification integration.",
-    highlights: ["Real-time Booking", "Patient Records", "SMS Notifications"],
-    tags: ["React", "Node.js", "MongoDB"],
-    color: "#f59e0b",
-    github: "https://github.com/naresh341",
-    live: null,
-    type: "Web App",
-    status: "Completed",
-  },
-  {
-    index: "04",
-    name: "HRMS Platform",
-    tagline: "Enterprise HR & payroll management system",
-    description:
-      "Comprehensive HR platform built at Tax-0 Smart. Features geofenced attendance, multi-tenant asset tracking, and an automated payroll engine for 500+ users.",
-    highlights: ["Geofenced Attendance", "Payroll Engine", "Multi-tenant"],
-    tags: ["Next.js", "Python", "MongoDB", "Leaflet"],
-    color: "#3b82f6",
-    github: "https://github.com/naresh341",
-    live: null,
-    type: "Enterprise",
-    status: "Live @ Taxosmart",
-  },
-];
+/* ─── types ─────────────────────────────────────────────────────── */
+interface Project {
+  id: number;
+  title: string;
+  name: string;
+  tagline: string;
+  description: string;
+  github?: string;
+  live?: string;
+  image_url?: string;
+  color: string;
+  tags: string[];
+}
 
-// ─── COMPONENT ────────────────────────────────────────────────────────────────
-export default function Workshowcase() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = useState(0);
+function fmt(p: any): Project {
+  return {
+    ...p,
+    name: p.name || p.title || "project",
+    github: p.github_link || p.github,
+    live: p.live_link || p.live,
+    tagline: p.tagline || "Enterprise Solution",
+    color: p.color || "#6E6E6E",
+    tags: p.tech_stack
+      ? p.tech_stack
+          .split(",")
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+      : [],
+  };
+}
 
-  useGSAP(
-    () => {
-      const track = trackRef.current;
-      if (!track) return;
+/* ─── Project Cursor ─── */
+const ProjectCursor = ({
+  color,
+  isVisible,
+}: {
+  color: string;
+  isVisible: boolean;
+}) => {
+  const [pos, setPos] = useState({ x: 0, y: 0 });
 
-      const trackAnim = gsap.to(track, {
-        x: () => -(track.scrollWidth - window.innerWidth),
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: () => `+=${track.scrollWidth - window.innerWidth}`,
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1,
-          fastScrollEnd: true,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            const idx = Math.floor(self.progress * (projects.length + 0.99));
-            setActiveIdx(Math.min(idx, projects.length));
-          },
-        },
-      });
-
-      gsap.utils.toArray<HTMLElement>(".project-slide").forEach((item) => {
-        gsap.fromTo(
-          item,
-          { opacity: 0.4, y: 20 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            scrollTrigger: {
-              trigger: item,
-              containerAnimation: trackAnim,
-              start: "left 80%",
-              toggleActions: "play none none reverse",
-            },
-          },
-        );
-      });
-    },
-    { scope: containerRef },
-  );
+  useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      setPos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMove);
+    return () => window.removeEventListener("mousemove", handleMove);
+  }, []);
 
   return (
-    <div
-      id="projects"
-      className="relative bg-background w-full border-t border-border/20"
+    <motion.div
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: isVisible ? 1 : 0, opacity: isVisible ? 1 : 0 }}
+      className="fixed pointer-events-none z-[100] flex items-center justify-center"
+      style={{
+        left: pos.x,
+        top: pos.y,
+        x: "-50%",
+        y: "-50%",
+      }}
     >
-      {/* Horizontal Scroll Showcase */}
       <div
-        ref={containerRef}
-        className="relative h-screen overflow-hidden bg-background"
+        className="relative w-[100px] h-[100px] rounded-full flex items-center justify-center overflow-hidden"
+        style={{ background: color }}
       >
-        {/* Progress bar */}
-        <div className="absolute top-0 left-0 right-0 z-30 px-6 lg:px-20 h-10 flex items-center justify-between border-b border-border/10 pointer-events-none bg-background/90 backdrop-blur-sm">
-          <span className="font-mono text-[9px] tracking-[0.35em] uppercase text-muted-foreground">
-            {activeIdx < projects.length ? projects[activeIdx].name : "Archive"}{" "}
-            // 0{Math.min(activeIdx + 1, projects.length + 1)}
-          </span>
-          <div className="flex gap-2">
-            {[...projects, { id: "cta" }].map((_, i) => (
-              <div
-                key={i}
-                className={`rounded-full transition-all duration-500 ${
-                  activeIdx === i
-                    ? "w-6 h-1.5 bg-foreground"
-                    : "w-1.5 h-1.5 bg-border"
-                }`}
-              />
-            ))}
-          </div>
-          <span className="font-mono text-[9px] tracking-[0.35em] uppercase text-muted-foreground">
-            0{projects.length + 1} Total
-          </span>
-        </div>
-
-        <div ref={trackRef} className="flex h-full w-fit">
-          {projects.map((project, i) => (
-            <div
+        <div className="absolute inset-0 animate-[spin_8s_linear_infinite]">
+          {[..."VIEW PROJECT VIEW PROJECT"].map((char, i) => (
+            <span
               key={i}
-              className="project-slide w-screen h-full flex items-center justify-center px-6 lg:px-20 flex-shrink-0 pt-10"
+              className="absolute left-1/2 top-1 w-full text-[8px] font-black uppercase tracking-widest text-white origin-[0_46px]"
+              style={{ transform: `rotate(${i * 13}deg)` }}
             >
-              <ProjectSlide project={project} />
-            </div>
+              {char}
+            </span>
           ))}
-
-          {/* CTA Slide */}
-          <div className="project-slide w-screen h-full flex items-center justify-center px-6 flex-shrink-0 pt-10">
-            <div className="max-w-2xl text-center space-y-10">
-              <div className="space-y-4">
-                <span className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground">
-                  There's more
-                </span>
-                <h2 className="text-6xl md:text-8xl font-bold tracking-tight leading-none">
-                  Explore the
-                  <br />
-                  <span className="text-muted-foreground font-light italic">
-                    full archive.
-                  </span>
-                </h2>
-              </div>
-              <Link
-                href="https://github.com/naresh341"
-                target="_blank"
-                className="group inline-flex items-center gap-4 px-8 py-4 bg-foreground text-background font-black tracking-widest uppercase text-[10px] hover:bg-primary transition-all rounded-xl"
-              >
-                View GitHub{" "}
-                <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </Link>
-            </div>
-          </div>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-background">
+          <ExternalLink className="w-5 h-5" style={{ color }} />
         </div>
       </div>
-    </div>
+    </motion.div>
+  );
+};
+
+/* ─── main ───────────────────────────────────────────────────────── */
+export default function Workshowcase() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const cardWrapRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const cardInnerRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  /* ── fetch ── */
+  useEffect(() => {
+    (async () => {
+      try {
+        let data = await projectService.getAllProjects();
+        if (!data?.length) {
+          await webhookService.triggerManualSync();
+          data = await projectService.getAllProjects();
+        }
+        setProjects((data || []).map(fmt));
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  /* ── GSAP: scale each card down as the next one scrolls over it ── */
+  useGSAP(
+    () => {
+      if (!projects.length) return;
+      const N = projects.length;
+
+      cardWrapRefs.current.forEach((wrap, i) => {
+        if (!wrap || i === N - 1) return; // last card doesn't need to shrink
+        const inner = cardInnerRefs.current[i];
+        if (!inner) return;
+
+        // As this card's section scrolls past, shrink and dim it
+        gsap.to(inner, {
+          scale: 0.88,
+          opacity: 0.5,
+          y: -40,
+          ease: "none",
+          scrollTrigger: {
+            trigger: wrap,
+            start: "top top",
+            end: "bottom top",
+            scrub: true,
+          },
+        });
+
+        // Track active index
+        ScrollTrigger.create({
+          trigger: wrap,
+          start: "top center",
+          end: "bottom center",
+          onEnter: () => setActiveIdx(i),
+          onEnterBack: () => setActiveIdx(i),
+        });
+      });
+
+      // Track last card active state
+      const lastWrap = cardWrapRefs.current[N - 1];
+      if (lastWrap) {
+        ScrollTrigger.create({
+          trigger: lastWrap,
+          start: "top center",
+          end: "bottom center",
+          onEnter: () => setActiveIdx(N - 1),
+          onEnterBack: () => setActiveIdx(N - 1),
+        });
+      }
+
+      ScrollTrigger.refresh();
+    },
+    { scope: sectionRef, dependencies: [projects] },
+  );
+
+  /* ── loading ── */
+  if (loading) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-background gap-4">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        <p className="font-mono text-[9px] tracking-[0.6em] uppercase text-muted-foreground/40">
+          Loading Projects
+        </p>
+      </div>
+    );
+  }
+  if (!projects.length) return null;
+
+  const N = projects.length;
+
+  return (
+    <section
+      id="projects"
+      ref={sectionRef}
+      className="relative w-full bg-background"
+    >
+      {/* ── Section Header ── */}
+      <div className="flex flex-col items-center justify-center pt-24 pb-16 text-center px-6">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-[10px] md:text-xs font-mono tracking-[0.6em] text-muted-foreground uppercase mb-4"
+        >
+          Crafting Modern Experiences
+        </motion.p>
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="text-[clamp(2.5rem,7vw,4.5rem)] font-black tracking-tighter leading-none"
+        >
+          VENTURE{" "}
+          <span className="font-serif italic font-light text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
+            SHOWCASE
+          </span>
+        </motion.h2>
+      </div>
+
+      {/* ── Progress indicator (sticky) ── */}
+      <div className="sticky top-4 z-50 flex justify-center pointer-events-none">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/80 backdrop-blur-md border border-border/40">
+          {projects.map((p, i) => (
+            <div
+              key={i}
+              className="rounded-full transition-all duration-500"
+              style={{
+                width: activeIdx === i ? 20 : 6,
+                height: 6,
+                background: activeIdx === i ? p.color : "var(--border)",
+              }}
+            />
+          ))}
+          <span className="ml-1 font-mono text-[9px] text-muted-foreground tabular-nums">
+            <span style={{ color: projects[activeIdx]?.color }}>
+              {String(activeIdx + 1).padStart(2, "0")}
+            </span>
+            {" / "}
+            {String(projects.length).padStart(2, "0")}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Stacking Cards ── 
+           Each wrap is `sticky top-0 h-screen`.
+           As you scroll past it, GSAP scrubs scale from 1 → 0.88,
+           so the next card appears to slide on top of it.
+      ── */}
+      <div className="relative">
+        <ProjectCursor
+          color={hoveredIdx !== null ? projects[hoveredIdx].color : "#fff"}
+          isVisible={hoveredIdx !== null}
+        />
+        {projects.map((project, i) => (
+          <div
+            key={project.id}
+            ref={(el) => {
+              cardWrapRefs.current[i] = el;
+            }}
+            className="sticky top-0 h-screen flex items-center justify-center px-3 sm:px-6"
+            style={{ zIndex: 10 + i }}
+            onMouseEnter={() => setHoveredIdx(i)}
+            onMouseLeave={() => setHoveredIdx(null)}
+          >
+            {/* The actual card — GSAP will scale/dim this when next card arrives */}
+            <div
+              ref={(el) => {
+                cardInnerRefs.current[i] = el;
+              }}
+              className="relative  max-w-7xl  w-[calc(100%-1.5rem)] rounded-2xl sm:rounded-[40px] overflow-hidden
+                          grid grid-cols-1 lg:grid-cols-[45%_55%] will-change-transform"
+              style={{
+                height: "clamp(460px, 74vh, 680px)",
+                background: "var(--card)",
+                border: `1px solid var(--border)`,
+                boxShadow: `0 24px 60px rgba(0,0,0,0.15), 0 0 0 0.5px ${project.color}22`,
+              }}
+            >
+              {/* color accent bar — top edge */}
+              <div
+                className="absolute top-0 left-8 right-8 h-px rounded-full"
+                style={{
+                  background: `linear-gradient(to right, transparent, ${project.color}80, transparent)`,
+                }}
+              />
+
+              {/* ambient glow */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: `radial-gradient(ellipse 60% 50% at 70% 30%, ${project.color}08, transparent 70%)`,
+                }}
+              />
+
+              {/* ── LEFT: info ── */}
+              <div className="relative flex flex-col justify-center p-6 sm:p-10 lg:p-16 z-10 gap-6 sm:gap-8">
+                {/* index + type */}
+                <div className="flex items-center gap-3">
+                  <span
+                    className="font-mono text-xs sm:text-sm font-black tabular-nums"
+                    style={{ color: project.color }}
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="h-px w-8 opacity-30 bg-foreground" />
+                  <span
+                    className="text-[10px] sm:text-xs font-bold tracking-widest uppercase px-3 py-1
+                               rounded-full border"
+                    style={{
+                      borderColor: `${project.color}50`,
+                      color: project.color,
+                      background: `${project.color}15`,
+                    }}
+                  >
+                    Full Stack
+                  </span>
+                </div>
+
+                {/* title + tagline */}
+                <div>
+                  <h2
+                    className="font-black tracking-tighter leading-tight text-foreground uppercase break-words"
+                    style={{ fontSize: "clamp(1.2rem, 3.5vw, 2.8rem)" }}
+                  >
+                    {project.title}
+                  </h2>
+                  <p
+                    className="mt-2 text-xs sm:text-sm tracking-[0.15em] uppercase font-semibold"
+                    style={{ color: project.color }}
+                  >
+                    {project.tagline}
+                  </p>
+                </div>
+
+                {/* description */}
+                <p className="text-base sm:text-lg text-foreground/70 leading-relaxed font-medium">
+                  {project.description}
+                </p>
+
+                {/* tech tags */}
+                <div className="flex flex-wrap gap-2">
+                  {project.tags.slice(0, 6).map((tag) => {
+                    const tech = TECH_ICONS[tag];
+                    return (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1.5 text-xs sm:text-[13px] px-3
+                                   py-1.5 rounded-lg border-2 font-bold"
+                        style={{
+                          borderColor: tech
+                            ? `${tech.color}50`
+                            : "var(--border)",
+                          color: tech?.color ?? "var(--foreground)",
+                          background: tech
+                            ? `${tech.color}15`
+                            : "var(--accent)",
+                        }}
+                      >
+                        {tech?.icon && (
+                          <span className="scale-110">{tech.icon}</span>
+                        )}
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
+
+                {/* buttons */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    href={project.github || "#"}
+                    target="_blank"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
+                               border-2 border-border text-xs sm:text-sm font-bold tracking-widest
+                               uppercase text-foreground/70 hover:border-primary/50 hover:text-foreground
+                               transition-all duration-200"
+                  >
+                    <GitBranch className="w-3.5 h-3.5" />
+                    Source
+                  </Link>
+                  {project.live && (
+                    <Link
+                      href={project.live}
+                      target="_blank"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
+                                 text-xs sm:text-sm font-bold tracking-widest uppercase
+                                 hover:opacity-80 transition-all"
+                      style={{ background: project.color, color: "#000" }}
+                    >
+                      Live <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {/* ── RIGHT: image ── */}
+              <div className="hidden lg:block relative overflow-hidden">
+                {/* left-edge blend */}
+                <div
+                  className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(to right, var(--card), transparent)",
+                  }}
+                />
+                {/* colour tint */}
+                <div
+                  className="absolute inset-0 z-10 pointer-events-none"
+                  style={{
+                    background: `linear-gradient(135deg, ${project.color}10 0%, transparent 50%)`,
+                  }}
+                />
+
+                {project.image_url ? (
+                  <div
+                    className="project-img absolute inset-0"
+                    style={{
+                      backgroundImage: `url(${project.image_url})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "top",
+                      backgroundRepeat: "no-repeat",
+                      transition:
+                        "background-position 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                    }}
+                    onMouseEnter={(e) => {
+                      (
+                        e.currentTarget as HTMLDivElement
+                      ).style.backgroundPosition = "bottom";
+                    }}
+                    onMouseLeave={(e) => {
+                      (
+                        e.currentTarget as HTMLDivElement
+                      ).style.backgroundPosition = "top";
+                    }}
+                  />
+                ) : (
+                  <WireframeBg color={project.color} />
+                )}
+
+                {/* large number watermark */}
+                <span
+                  className="absolute right-4 bottom-2 font-black leading-none
+                             pointer-events-none select-none"
+                  style={{
+                    fontSize: "clamp(80px, 14vw, 160px)",
+                    color: project.color,
+                    opacity: 0.06,
+                    letterSpacing: "-0.05em",
+                  }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Bottom spacer ── */}
+      <div className="h-32" />
+    </section>
   );
 }
 
-// ─── PROJECT SLIDE ─────────────────────────────────────────────────────────────
-function ProjectSlide({ project }: { project: (typeof projects)[0] }) {
-  const panelRef = useRef<HTMLDivElement>(null);
-  const [hovered, setHovered] = useState(false);
-
-  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const el = panelRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    el.querySelectorAll<HTMLElement>("[data-depth]").forEach((p) => {
-      const d = Number(p.dataset.depth ?? 0);
-      const dx = ((e.clientX - r.left) / r.width - 0.5) * d;
-      const dy = ((e.clientY - r.top) / r.height - 0.5) * d;
-      p.style.transform = `translate3d(${dx}px,${dy}px,0)`;
-    });
-  };
-
-  const onLeave = () => {
-    setHovered(false);
-    panelRef.current
-      ?.querySelectorAll<HTMLElement>("[data-depth]")
-      .forEach((p) => {
-        p.style.transform = "translate3d(0,0,0)";
-      });
-  };
-
+/* ─── wireframe fallback ─────────────────────────────────────────── */
+function WireframeBg({ color }: { color: string }) {
   return (
     <div
-      ref={panelRef}
-      onMouseMove={onMove}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={onLeave}
-      className="w-full max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center h-full"
+      className="absolute inset-0 flex flex-col gap-4 p-8"
+      style={{ background: `${color}06` }}
     >
-      {/* Ambient glow */}
       <div
-        className="absolute inset-0 pointer-events-none transition-opacity duration-700"
+        className="absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse 40% 50% at 65% 50%, ${project.color}10, transparent 70%)`,
-          opacity: hovered ? 1 : 0.5,
+          backgroundImage: `radial-gradient(${color}10 1.5px, transparent 1.5px)`,
+          backgroundSize: "22px 22px",
         }}
       />
-
-      {/* ── LEFT: Info ── */}
-      <div className="lg:col-span-5 flex flex-col gap-6 relative z-10">
-        <div className="flex items-center gap-4">
-          <span
-            className="font-mono text-xs font-bold"
-            style={{ color: project.color }}
-          >
-            {project.index}
-          </span>
-          <span className="h-px w-8 bg-border" />
-          <span className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
-            {project.type}
-          </span>
-          <span
-            className="ml-auto px-2.5 py-1 rounded-full text-[8px] font-mono font-bold uppercase tracking-widest border"
-            style={{
-              borderColor: `${project.color}40`,
-              color: project.color,
-              backgroundColor: `${project.color}10`,
-            }}
-          >
-            {project.status}
-          </span>
+      <div className="relative z-10 flex flex-col gap-3 h-full">
+        <div className="flex gap-3">
+          <div
+            className="h-7 w-24 rounded-lg"
+            style={{ background: `${color}20` }}
+          />
+          <div
+            className="h-7 w-16 rounded-lg"
+            style={{ background: `${color}12` }}
+          />
         </div>
-
-        <div data-depth="10">
-          <h3 className="text-5xl md:text-7xl font-black tracking-tighter leading-none">
-            {project.name}
-          </h3>
-          <p className="mt-2 text-sm tracking-widest uppercase text-muted-foreground font-light">
-            {project.tagline}
-          </p>
-        </div>
-
-        <p
-          className="text-sm text-muted-foreground leading-relaxed max-w-[44ch]"
-          data-depth="4"
-        >
-          {project.description}
-        </p>
-
-        <ul className="space-y-2">
-          {project.highlights.map((h, i) => (
-            <li
-              key={i}
-              className="flex items-center gap-2.5 text-sm text-foreground/75"
-            >
-              <span
-                className="w-1 h-1 rounded-full shrink-0"
-                style={{ backgroundColor: project.color }}
-              />
-              {h}
-            </li>
-          ))}
-        </ul>
-
-        <div className="h-px w-full bg-border/30" />
-
-        <div>
-          <p className="text-[9px] tracking-[0.4em] uppercase text-muted-foreground mb-3">
-            Tech Stack
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {project.tags.map((tag) => {
-              const tech = TECH_ICONS[tag];
-              return (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border tracking-wide"
-                  style={{
-                    borderColor: tech
-                      ? `${tech.color}35`
-                      : "hsl(var(--border))",
-                    color: tech?.color ?? "hsl(var(--foreground))",
-                    background: tech ? `${tech.color}0d` : "hsl(var(--muted))",
-                  }}
-                >
-                  {tech?.icon}
-                  {tag}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Link
-            href={project.github}
-            target="_blank"
-            className="group inline-flex items-center gap-2 px-5 py-2.5 border border-border rounded-lg text-[11px] font-bold tracking-widest uppercase hover:border-foreground transition-all"
-          >
-            <GitBranch className="w-3.5 h-3.5" /> Source
-          </Link>
-          {project.live && (
-            <Link
-              href={project.live}
-              target="_blank"
-              className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-[11px] font-bold tracking-widest uppercase transition-all"
-              style={{ backgroundColor: project.color, color: "#000" }}
-            >
-              Live <ExternalLink className="w-3 h-3" />
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* ── RIGHT: Visual Mockup ── */}
-      <div
-        className="hidden lg:flex lg:col-span-7 h-[72vh] flex-col gap-3 relative z-10"
-        data-depth="14"
-      >
-        {/* Browser frame */}
         <div
-          className="flex-1 rounded-2xl overflow-hidden border border-border/60 bg-card/50 backdrop-blur-sm flex flex-col"
-          style={{
-            boxShadow: `0 0 0 1px ${project.color}15, 0 40px 80px -20px ${project.color}10`,
-          }}
-        >
-          {/* Chrome bar */}
-          <div className="shrink-0 h-9 bg-muted/50 border-b border-border/40 flex items-center gap-1.5 px-4">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-400/60" />
-            <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/60" />
-            <span className="h-2.5 w-2.5 rounded-full bg-green-400/60" />
-            <div className="ml-3 flex-1 max-w-[220px] h-5 bg-background/60 border border-border/30 rounded-md flex items-center px-3">
-              <span className="text-[9px] text-muted-foreground tracking-wider">
-                github.com/naresh341/
-                {project.name.toLowerCase().replace(/\s+/g, "-")}
-              </span>
-            </div>
-            <div className="ml-auto flex items-center gap-1.5">
-              <span
-                className="h-1.5 w-1.5 rounded-full animate-pulse"
-                style={{ background: project.color }}
-              />
-              <span className="text-[8px] text-muted-foreground tracking-wider">
-                {project.status}
-              </span>
-            </div>
-          </div>
-
-          {/* Wireframe content */}
-          <div className="flex-1 relative overflow-hidden p-8 flex flex-col gap-5">
-            {/* Grid overlay */}
+          className="h-36 w-full rounded-xl"
+          style={{ background: `${color}0c`, border: `0.5px solid ${color}18` }}
+        />
+        <div className="grid grid-cols-3 gap-3 flex-1">
+          {[0, 1, 2].map((v) => (
             <div
-              className="absolute inset-0 pointer-events-none"
+              key={v}
+              className="rounded-xl"
               style={{
-                backgroundImage: `radial-gradient(${project.color}08 1px, transparent 1px)`,
-                backgroundSize: "28px 28px",
+                background: `${color}07`,
+                border: `0.5px solid ${color}10`,
               }}
             />
-
-            {/* Ghost letter */}
-            <div
-              className="absolute -right-4 top-1/2 -translate-y-1/2 font-black leading-none select-none pointer-events-none"
-              style={{
-                fontSize: "20vw",
-                color: project.color,
-                opacity: 0.025,
-                letterSpacing: "-0.05em",
-              }}
-            >
-              {project.name[0]}
-            </div>
-
-            {/* Wireframe UI */}
-            <div className="relative z-10 flex flex-col gap-4 flex-1">
-              <div className="flex items-center gap-3">
-                <div
-                  className="h-7 w-24 rounded-lg"
-                  style={{ background: `${project.color}25` }}
-                />
-                <div className="flex-1 flex gap-2 justify-end">
-                  {[64, 52, 48].map((w, i) => (
-                    <div
-                      key={i}
-                      className="h-5 rounded-md"
-                      style={{ width: w, background: `${project.color}12` }}
-                    />
-                  ))}
-                  <div
-                    className="h-7 w-20 rounded-lg"
-                    style={{ background: `${project.color}35` }}
-                  />
-                </div>
-              </div>
-
-              <div
-                className="h-28 rounded-xl flex items-center px-6 gap-4"
-                style={{
-                  background: `${project.color}12`,
-                  border: `1px solid ${project.color}20`,
-                }}
-              >
-                <div className="space-y-2 flex-1">
-                  <div
-                    className="h-4 w-48 rounded-md"
-                    style={{ background: `${project.color}40` }}
-                  />
-                  <div
-                    className="h-3 w-64 rounded-md"
-                    style={{ background: `${project.color}20` }}
-                  />
-                  <div
-                    className="h-3 w-52 rounded-md"
-                    style={{ background: `${project.color}15` }}
-                  />
-                </div>
-                <div
-                  className="h-9 w-24 rounded-xl"
-                  style={{ background: `${project.color}50` }}
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 flex-1">
-                {[0.8, 0.5, 0.7, 0.9, 0.4, 0.65].map((o, i) => (
-                  <div
-                    key={i}
-                    className="rounded-xl"
-                    style={{
-                      background: `${project.color}${Math.round(o * 16)
-                        .toString(16)
-                        .padStart(2, "0")}`,
-                      border: `1px solid ${project.color}18`,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
-
-        {/* Bottom stat tiles */}
-        <div className="shrink-0 grid grid-cols-3 gap-3 h-28">
-          <div className="rounded-xl border border-border/40 bg-card/30 backdrop-blur-sm p-4 flex flex-col justify-between">
-            <span className="text-[9px] tracking-widest uppercase text-muted-foreground font-mono">
-              Type
-            </span>
-            <div>
-              <p className="text-sm font-bold">{project.type}</p>
-              <p className="text-[10px] text-muted-foreground">Full Stack</p>
-            </div>
-          </div>
-          <div
-            className="rounded-xl border p-4 flex flex-col justify-between"
-            style={{
-              borderColor: `${project.color}25`,
-              background: `${project.color}06`,
-            }}
-          >
-            <span className="text-[9px] tracking-widest uppercase text-muted-foreground font-mono">
-              Stack
-            </span>
-            <div>
-              <p
-                className="text-2xl font-black"
-                style={{ color: project.color }}
-              >
-                {project.tags.length}
-              </p>
-              <p className="text-[10px] text-muted-foreground">Technologies</p>
-            </div>
-          </div>
-          <Link
-            href={project.github}
-            target="_blank"
-            className="group rounded-xl border border-border/40 bg-card/30 backdrop-blur-sm p-4 flex flex-col justify-between hover:border-primary/30 transition-all cursor-pointer"
-          >
-            <span className="text-[9px] tracking-widest uppercase text-muted-foreground font-mono">
-              Source
-            </span>
-            <div className="flex items-end justify-between">
-              <p className="text-sm font-bold">GitHub</p>
-              <div className="w-7 h-7 rounded-full border border-border flex items-center justify-center transition-all group-hover:bg-foreground group-hover:border-foreground group-hover:text-background">
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </div>
-            </div>
-          </Link>
-        </div>
+        <div
+          className="h-9 w-1/3 rounded-xl"
+          style={{ background: `${color}12` }}
+        />
       </div>
     </div>
   );

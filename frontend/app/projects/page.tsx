@@ -6,7 +6,7 @@ import { SectionHero } from "../components/ui/DashboardWidgets";
 
 export default function ProjectsPage() {
   return (
-    <div className="bg-background w-full overflow-x-hidden">
+    <div className="bg-background w-full overflow-clip">
       <SectionHero 
         title="PROJECTS" 
         label="EXPLORE MY PORTFOLIO" 

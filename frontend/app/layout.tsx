@@ -1,13 +1,29 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import {
+  Space_Grotesk,
+  Syne,
+  Geist_Mono,
+  Playfair_Display,
+} from "next/font/google";
 import { ThemeProvider } from "./Context/ThemeContext";
 import "./globals.css";
 import { ReactLenis } from "lenis/react";
 import Navbar from "./components/ui/Navbar";
+import IntroLoader from "./components/ui/IntroLoader";
+import GlobalCursor from "./components/ui/GlobalCursor";
+import ScrollToTop from "./components/ui/ScrollToTop";
+import { DevToolsGuard } from "./components/MiniComponents/DevToolsGuard";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const syne = Syne({
+  variable: "--font-syne",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -22,9 +38,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Naresh's Portfolio",
+  title: "Naresh Bhati — Full Stack Developer",
   description:
-    "A showcase of Naresh's projects and skills in software development.",
+    "Portfolio of Naresh Bhati — Full Stack Developer building enterprise apps, modern UIs, and scalable systems.",
 };
 
 export default function RootLayout({
@@ -35,24 +51,32 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased `}
+      className={`${spaceGrotesk.variable} ${syne.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <ReactLenis
-          root
-          options={{
-            lerp: 0.1,
-            duration: 1.5,
-            smoothWheel: true,
-          }}
-        >
-          <ThemeProvider>
-            <div className="px-6 lg:px-16">
-              <Navbar />
-            </div>
-            {children}
-          </ThemeProvider>
-        </ReactLenis>
+      <body
+        className="min-h-full flex flex-col bg-background text-foreground"
+        style={{ cursor: "none" }}
+      >
+        <DevToolsGuard>
+          <ReactLenis
+            root
+            options={{
+              lerp: 0.1,
+              duration: 1.5,
+              smoothWheel: true,
+            }}
+          >
+            <ThemeProvider>
+              <ScrollToTop />
+              <IntroLoader />
+              <div className="px-6 lg:px-16">
+                <Navbar />
+              </div>
+              {children}
+              <GlobalCursor />
+            </ThemeProvider>
+          </ReactLenis>
+        </DevToolsGuard>
       </body>
     </html>
   );

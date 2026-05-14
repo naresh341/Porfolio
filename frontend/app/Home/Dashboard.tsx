@@ -2,7 +2,10 @@
 
 import AboutMe from "../components/ui/AboutMe";
 import Contact from "../components/ui/Contact";
-import { BentoWidgets, GithubActivity } from "../components/ui/DashboardWidgets";
+import {
+  BentoWidgets,
+  GithubActivity,
+} from "../components/ui/DashboardWidgets";
 import ExperienceSection from "../components/ui/ExperienceSkills";
 import Footer from "../components/ui/Footer";
 import HeroSection from "../components/ui/HeroSection";
@@ -27,23 +30,17 @@ const Dashboard = () => {
 
   return (
     <>
-      <main className="flex flex-col">
+      <main className="flex flex-col bg-background">
         <HeroSection />
         <SubHeroSection />
+        <Workshowcase />
+        <ExperienceSection />
+        <SkillsSection />
+        <AboutMe />
+        <BentoWidgets />
+        <Contact />
+        <Footer />
       </main>
-
-      {/* Main Sections */}
-      <AboutMe />
-      <Workshowcase />
-      <ExperienceSection />
-      <SkillsSection />
-
-      {/* Reusable Data/Social Sections */}
-      <GithubActivity />
-      <BentoWidgets />
-
-      <Contact />
-      <Footer />
     </>
   );
 };

@@ -8,28 +8,21 @@ import gsap from "gsap";
 
 const footerLinks = [
   {
-    title: "General",
+    title: "Navigate",
     links: [
-      { name: "Home", href: "/" },
-      { name: "Blogs", href: "#" },
-      { name: "Guestbook", href: "#" },
-      { name: "Uses", href: "#" },
-    ],
-  },
-  {
-    title: "About",
-    links: [
-      { name: "About Me", href: "#about" },
-      { name: "Projects", href: "#work" },
+      { name: "Home", href: "#" },
+      { name: "Projects", href: "#projects" },
+      { name: "Experience", href: "#experience" },
+      { name: "About", href: "#about" },
       { name: "Contact", href: "#contact" },
     ],
   },
-
   {
-    title: "Legal",
+    title: "Connect",
     links: [
-      { name: "Privacy Policy", href: "#" },
-      { name: "Terms & Conditions", href: "#" },
+      { name: "GitHub", href: "https://github.com/naresh341", external: true },
+      { name: "LinkedIn", href: "https://linkedin.com/in/naresh-bhati-b72249250", external: true },
+      { name: "Email", href: "mailto:nareshbhati341@gmail.com", external: true },
     ],
   },
 ];
@@ -45,9 +38,10 @@ const SocialIcons = {
       <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
     </svg>
   ),
-  Twitter: (
-    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  Email: (
+    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
     </svg>
   ),
 };
@@ -83,38 +77,47 @@ export default function Footer() {
   };
 
   return (
-    <footer ref={containerRef} className="relative bg-background pt-32 pb-12 px-6 lg:px-16 overflow-hidden">
-      {/* Top Section: CTA and Floating Ring */}
-      <div className=" mx-auto mb-32">
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-16">
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center">
-                 {/* Avatar placeholder */}
-                 <div className="w-full h-full bg-linear-to-br from-primary/20 to-purple-500/20" />
-              </div>
-              <h2 className="text-5xl md:text-7xl font-bold tracking-tighter leading-none">
-                Let&apos;s create <br /> 
-                <span className="text-muted-foreground italic font-light">something real.</span>
-              </h2>
+    <footer ref={containerRef} className="relative bg-background pt-24 pb-12 px-6 lg:px-16 overflow-hidden border-t border-border/20">
+      {/* Top Section: CTA */}
+      <div className="mx-auto mb-24">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-12">
+          {/* Left: Big CTA text */}
+          <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-6">
+            <p className="text-[10px] font-mono tracking-[0.5em] uppercase text-muted-foreground">
+              Available for work
+            </p>
+            <h2 className="text-5xl md:text-7xl font-bold tracking-tighter leading-none">
+              Let&apos;s create <br />
+              <span className="text-muted-foreground italic font-light">something real.</span>
+            </h2>
+            <div className="flex flex-wrap items-center gap-6 mt-2">
+              <a
+                href="#contact"
+                onClick={(e) => { e.preventDefault(); document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" }); }}
+                className="group inline-flex items-center gap-4 px-8 py-4 rounded-2xl border-2 border-foreground/30 hover:border-foreground bg-foreground/5 hover:bg-foreground/10 transition-all duration-300 cursor-pointer"
+              >
+                <Mail className="w-5 h-5 text-foreground" />
+                <span className="text-base font-black tracking-[0.25em] uppercase text-foreground group-hover:tracking-[0.35em] transition-all duration-300">Get in touch</span>
+              </a>
+              <a
+                href="mailto:nareshbhati341@gmail.com"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+              >
+                nareshbhati341@gmail.com
+              </a>
             </div>
           </div>
 
           {/* Animated Floating Ring */}
-          <div className="relative">
-            <div 
+          <div className="relative shrink-0">
+            <div
               ref={ringRef}
-              className="w-40 h-40 md:w-56 md:h-56 rounded-full relative flex items-center justify-center"
+              className="w-40 h-40 md:w-52 md:h-52 rounded-full relative flex items-center justify-center"
             >
-              {/* Main Ring */}
               <div className="absolute inset-0 rounded-full border-[6px] border-primary/30 shadow-[0_0_60px_rgba(59,130,246,0.3),inset_0_0_30px_rgba(59,130,246,0.2)]" />
-              {/* Accent Glow */}
               <div className="absolute inset-0 rounded-full border-t-4 border-l-4 border-purple-500 shadow-[0_0_40px_rgba(168,85,247,0.4)]" />
-              {/* Inner Depth */}
-              <div className="w-full h-full rounded-full bg-background/40 backdrop-blur-sm border border-white/5" />
+              <div className="w-full h-full rounded-full bg-background/40 backdrop-blur-sm border border-border/10" />
             </div>
-            
-            {/* Background Light Beam */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/10 blur-[100px] rounded-full -z-10" />
           </div>
         </div>
@@ -133,14 +136,14 @@ export default function Footer() {
               </p>
               
               <div className="flex gap-6">
-                <Link href="https://github.com/naresh341" target="_blank" className="text-muted-foreground hover:text-primary transition-colors">{SocialIcons.Github}</Link>
-                <Link href="https://linkedin.com/in/naresh341" target="_blank" className="text-muted-foreground hover:text-primary transition-colors">{SocialIcons.Linkedin}</Link>
-                <Link href="https://twitter.com/naresh341" target="_blank" className="text-muted-foreground hover:text-primary transition-colors">{SocialIcons.Twitter}</Link>
+                <Link href="https://github.com/naresh341" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">{SocialIcons.Github}</Link>
+                <Link href="https://linkedin.com/in/naresh-bhati-b72249250" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">{SocialIcons.Linkedin}</Link>
+                <Link href="mailto:nareshbhati341@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">{SocialIcons.Email}</Link>
               </div>
             </div>
 
             {/* Links Columns */}
-            <div className="col-span-12 lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-12">
+            <div className="col-span-12 lg:col-span-8 grid grid-cols-2 gap-12">
               {footerLinks.map((section, i) => (
                 <div key={i} className="space-y-6">
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">{section.title}</h4>
@@ -148,10 +151,23 @@ export default function Footer() {
                     {section.links.map((link, j) => (
                       <li key={j}>
                         <Link 
-                          href={link.href} 
-                          className="text-[13px] text-muted-foreground hover:text-foreground transition-colors duration-300"
+                          href={link.href}
+                          target={link.external ? "_blank" : undefined}
+                          rel={link.external ? "noopener noreferrer" : undefined}
+                          onClick={!link.external && link.href.startsWith("#") ? (e) => {
+                            e.preventDefault();
+                            const el = document.querySelector(link.href === "#" ? "body" : link.href);
+                            if (link.href === "#") window.scrollTo({ top: 0, behavior: "smooth" });
+                            else el?.scrollIntoView({ behavior: "smooth" });
+                          } : undefined}
+                          className="text-[13px] text-muted-foreground hover:text-foreground transition-colors duration-300 flex items-center gap-1.5 group"
                         >
                           {link.name}
+                          {link.external && (
+                            <svg className="w-2.5 h-2.5 opacity-0 group-hover:opacity-60 transition-opacity" viewBox="0 0 10 10" fill="none">
+                              <path d="M1 9L9 1M9 1H4M9 1V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                          )}
                         </Link>
                       </li>
                     ))}
@@ -164,7 +180,7 @@ export default function Footer() {
 
           <div className="mt-20 pt-10 border-t border-border/30 flex flex-col md:flex-row justify-between items-center gap-8">
             <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              © 2026 Naresh Portfolio. All rights reserved.
+              © {new Date().getFullYear()} Naresh Bhati. All rights reserved.
             </p>
             
             <button

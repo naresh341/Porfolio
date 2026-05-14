@@ -18,11 +18,13 @@ import { usePathname, useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 80);
     };
@@ -115,30 +117,23 @@ const Navbar = () => {
         </button>
       </div>
 
-      <motion.div
-        initial={false}
-        animate={
-          isScrolled
-            ? {
-                left: "50%",
-                x: "-50%",
-                y: 20,
-                scale: 1,
-              }
-            : {
-                left: "calc(100% - 80px)",
-                x: "-100%",
-                y: 0,
-                scale: 0.95,
-              }
-        }
-        transition={{
-          type: "spring",
-          stiffness: 140,
-          damping: 20,
-        }}
-        className="fixed top-4 z-50"
+      <div 
+        className={`fixed top-4 left-0 w-full z-[100] px-5 flex pointer-events-none transition-[justify-content] duration-700 ease-out ${
+          isScrolled ? "justify-center" : "justify-end"
+        }`}
       >
+        <motion.div
+          layout
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0, scale: isScrolled ? 1 : 0.95 }}
+          transition={{
+            type: "spring",
+            stiffness: 150,
+            damping: 20,
+            delay: mounted ? 0 : 3.5,
+          }}
+          className="pointer-events-auto"
+        >
         <div className="flex items-center bg-card/80 backdrop-blur-xl border border-border rounded-xl shadow-xl overflow-hidden">
           <LimelightNav
             items={navItems}
@@ -147,18 +142,40 @@ const Navbar = () => {
 
           <span className="w-px h-6 bg-border" />
 
+          {/* Download Resume Button */}
+          <button
+            onClick={() => {
+              try {
+                window.open("http://localhost:8000/api/resume/download", "_blank");
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+            className="hidden md:flex h-full px-5 items-center gap-2.5 transition-colors border-x border-border group hover:bg-primary/5 dark:hover:bg-primary/10"
+          >
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background shadow-md group-hover:scale-110 transition-transform duration-300">
+               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-y-[1px] transition-transform"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">
+              Resume
+            </span>
+          </button>
+
+          <span className="w-px h-6 bg-border" />
+
           <button
             onClick={toggleTheme}
             className="w-12 h-12 flex items-center justify-center hover:bg-accent transition"
           >
-            {theme === "dark" ? (
+            {mounted && (theme === "dark" ? (
               <Sun className="w-5 h-5 text-foreground" />
             ) : (
               <Moon className="w-5 h-5 text-foreground" />
-            )}
+            ))}
           </button>
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </>
   );
 };

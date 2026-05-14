@@ -150,7 +150,7 @@ function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }: BandProps) {
   useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 0.5]); // Length was 1
   useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1.5]); // Length was 1
   useSphericalJoint(j3, card, [
-    [0, 0 , 0],
+    [0, 0, 0],
     [0, 1.45, 0],
   ]);
 

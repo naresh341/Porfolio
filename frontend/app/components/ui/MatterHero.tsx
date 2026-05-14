@@ -1,20 +1,52 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import { useTheme } from "@/app/Context/ThemeContext";
 import Matter from "matter-js";
-
-const SKILLS = [
-  "React", "Next.js", "TypeScript", "Tailwind", "GSAP", 
-  "Matter.js", "Python", "FastAPI", "SQL", "Docker", 
-  "AWS", "Git", "Framer", "Three.js", "UI/UX"
-];
+import { useEffect, useMemo, useRef } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { TECH_ICONS } from "../MiniComponents/TechIcons";
 
 export default function MatterHero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const iconCacheRef = useRef<Record<string, HTMLImageElement>>({});
+  const { theme } = useTheme();
+
+  const SKILLS = useMemo(
+    () =>
+      Object.entries(TECH_ICONS).map(([name, data]) => ({
+        name,
+        color: data.color,
+        iconJSX: data.icon,
+      })),
+    [],
+  );
 
   useEffect(() => {
     if (!containerRef.current || !canvasRef.current) return;
+
+    // =========================
+    // CACHE ICONS
+    // =========================
+    SKILLS.forEach((skill) => {
+      if (!iconCacheRef.current[skill.name]) {
+        try {
+          const svgString = renderToStaticMarkup(
+            skill.iconJSX as React.ReactElement,
+          );
+
+          const img = new Image();
+
+          const svgBase64 = btoa(unescape(encodeURIComponent(svgString)));
+
+          img.src = `data:image/svg+xml;base64,${svgBase64}`;
+
+          iconCacheRef.current[skill.name] = img;
+        } catch (err) {
+          console.error(`Failed to cache icon for ${skill.name}:`, err);
+        }
+      }
+    });
 
     const {
       Engine,
@@ -25,152 +57,307 @@ export default function MatterHero() {
       Mouse,
       MouseConstraint,
       Events,
+      Bounds,
+      Body,
     } = Matter;
 
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    // =========================
+    // DIMENSIONS
+    // =========================
+    const width = containerRef.current.clientWidth;
+    const height = containerRef.current.clientHeight;
 
-    // Create engine
+    // =========================
+    // ENGINE
+    // =========================
     const engine = Engine.create();
-    engine.gravity.y = 0.05; // Light gravity for "floating" feel
-    engine.gravity.x = 0;
 
-    // Create renderer
+    engine.gravity.y = 0.25;
+
+    // =========================
+    // RENDER
+    // =========================
     const render = Render.create({
       canvas: canvasRef.current,
-      engine: engine,
+      engine,
       options: {
         width,
         height,
         background: "transparent",
         wireframes: false,
-        pixelRatio: window.devicePixelRatio,
+        pixelRatio: Math.min(window.devicePixelRatio, 2),
       },
     });
 
-    // Create walls
-    const wallOptions = { isStatic: true, render: { visible: false } };
-    const ground = Bodies.rectangle(width / 2, height + 50, width, 100, wallOptions);
-    const ceiling = Bodies.rectangle(width / 2, -1000, width, 100, wallOptions); // Higher ceiling for better fall
-    const leftWall = Bodies.rectangle(-50, height / 2, 100, height, wallOptions);
-    const rightWall = Bodies.rectangle(width + 50, height / 2, 100, height, wallOptions);
-
-    // INVISIBLE SHELF for the name "Naresh" to catch pills
-    // Positioning it roughly at the center where the H1 is
-    const shelfWidth = width > 768 ? 600 : 300;
-    const shelfY = height * 0.5; // Perfectly centered
-    const shelf = Bodies.rectangle(width / 2, shelfY, shelfWidth, 20, {
+    // =========================
+    // WALLS
+    // =========================
+    const wallOptions = {
       isStatic: true,
       render: { visible: false },
-      chamfer: { radius: 10 }
-    });
+    };
 
-    // Create pills
+    const ground = Bodies.rectangle(
+      width / 2,
+      height + 40,
+      width,
+      80,
+      wallOptions,
+    );
+
+    const leftWall = Bodies.rectangle(-40, height / 2, 80, height, wallOptions);
+
+    const rightWall = Bodies.rectangle(
+      width + 40,
+      height / 2,
+      80,
+      height,
+      wallOptions,
+    );
+
+    // =========================
+    // CENTER SHELF
+    // =========================
+    const shelf = Bodies.rectangle(
+      width / 2,
+      height * 0.65,
+      width > 768 ? 550 : 260,
+      10,
+      {
+        isStatic: true,
+        render: { visible: false },
+      },
+    );
+
+    // =========================
+    // PILLS
+    // =========================
     const pills = SKILLS.map((skill) => {
-      // Spawn them high above the viewport to "land"
-      const x = Math.random() * width;
-      const y = -Math.random() * 1000;
-      const pillWidth = skill.length * 15 + 60; // Bigger
-      const pillHeight = 56; // Bigger
+      const pillWidth = skill.name.length * 10 + 90;
 
-      const body = Bodies.rectangle(x, y, pillWidth, pillHeight, {
-        chamfer: { radius: 28 },
-        restitution: 0.6, // Slightly less bouncy so they settle
-        friction: 0.1,
-        frictionAir: 0.01,
-        render: {
-          fillStyle: "rgba(255, 255, 255, 0.08)", // Brighter glass effect
-          strokeStyle: "rgba(255, 255, 255, 0.4)", // Much more visible border
-          lineWidth: 2,
+      const body = Bodies.rectangle(
+        Math.random() * width,
+        -Math.random() * 2000,
+        pillWidth,
+        52,
+        {
+          chamfer: { radius: 14 },
+
+          restitution: 0.4,
+
+          friction: 0.1,
+
+          frictionAir: 0.02,
+
+          inertia: Infinity,
+
+          density: 0.002,
+
+          render: {
+            visible: false,
+          },
         },
-      });
+      );
 
-      (body as any).label = skill;
+      (body as any).label = skill.name;
+      (body as any).skillColor = skill.color;
+
       return body;
     });
 
-    Composite.add(engine.world, [ground, ceiling, leftWall, rightWall, shelf, ...pills]);
+    Composite.add(engine.world, [ground, leftWall, rightWall, shelf, ...pills]);
 
-    // Add mouse control
+    // =========================
+    // MOUSE
+    // =========================
     const mouse = Mouse.create(render.canvas);
+
     const mouseConstraint = MouseConstraint.create(engine, {
-      mouse: mouse,
+      mouse,
       constraint: {
         stiffness: 0.2,
-        render: { visible: false },
+        render: {
+          visible: false,
+        },
       },
     });
 
     Composite.add(engine.world, mouseConstraint);
 
-    // Custom rendering for text labels
+    render.mouse = mouse;
+
+    // =========================
+    // CUSTOM RENDER
+    // =========================
     Events.on(render, "afterRender", () => {
       const context = render.context;
-      context.font = "bold 15px font-mono"; // Even slightly bigger
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillStyle = "rgba(255, 255, 255, 1)"; // Pure white text
 
       pills.forEach((pill: any) => {
         const { x, y } = pill.position;
+
         const angle = pill.angle;
 
+        const color = pill.skillColor;
+
+        const label = pill.label;
+
+        const iconImg = iconCacheRef.current[label];
+
+        const isHovered = Bounds.contains(pill.bounds, mouse.position);
+
         context.save();
+
         context.translate(x, y);
+
         context.rotate(angle);
-        context.fillText(pill.label.toUpperCase(), 0, 0);
+
+        // subtle hover scale
+        context.scale(isHovered ? 1.04 : 1, isHovered ? 1.04 : 1);
+
+        const w = pill.bounds.max.x - pill.bounds.min.x;
+
+        const h = 52;
+
+        // =========================
+        // MAIN CARD
+        // =========================
+        context.beginPath();
+
+        context.roundRect(-w / 2, -h / 2, w, h, 14);
+
+        context.fillStyle =
+          theme === "dark" ? "rgba(12,12,12,0.96)" : "rgba(255,255,255,0.96)";
+
+        context.fill();
+
+        // =========================
+        // BORDER
+        // =========================
+        context.beginPath();
+
+        context.roundRect(-w / 2, -h / 2, w, h, 14);
+
+        context.lineWidth = 1;
+
+        context.strokeStyle =
+          theme === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+
+        context.stroke();
+
+        // =========================
+        // LEFT ACCENT
+        // =========================
+        context.beginPath();
+
+        context.roundRect(-w / 2, -h / 2, 5, h, 14);
+
+        context.fillStyle = color;
+
+        context.fill();
+
+        // =========================
+        // ICON
+        // =========================
+        if (iconImg && iconImg.complete && iconImg.naturalWidth !== 0) {
+          const iconSize = 24;
+
+          context.drawImage(
+            iconImg,
+            -w / 2 + 16,
+            -iconSize / 2,
+            iconSize,
+            iconSize,
+          );
+        }
+
+        // =========================
+        // TEXT
+        // =========================
+        context.font = "600 14px Inter, system-ui, sans-serif";
+
+        context.textAlign = "left";
+
+        context.textBaseline = "middle";
+
+        context.fillStyle = theme === "dark" ? "#f5f5f5" : "#111111";
+
+        context.fillText(label, -w / 2 + 52, 1);
+
+        // =========================
+        // STATUS DOT
+        // =========================
+        context.beginPath();
+
+        context.arc(w / 2 - 18, 0, 4, 0, Math.PI * 2);
+
+        context.fillStyle = color;
+
+        context.fill();
+
         context.restore();
       });
     });
 
-    // Run the engine and renderer
+    // =========================
+    // RUNNER
+    // =========================
     const runner = Runner.create();
+
     Runner.run(runner, engine);
+
     Render.run(render);
 
-    // Handle resize
+    // =========================
+    // RESIZE
+    // =========================
     const handleResize = () => {
-      const newWidth = window.innerWidth;
-      const newHeight = window.innerHeight;
+      if (!containerRef.current) return;
+
+      const newWidth = containerRef.current.clientWidth;
+
+      const newHeight = containerRef.current.clientHeight;
+
       render.canvas.width = newWidth;
+
       render.canvas.height = newHeight;
-      render.options.width = newWidth;
-      render.options.height = newHeight;
 
-      // Update walls
-      Matter.Body.setPosition(ground, { x: newWidth / 2, y: newHeight + 50 });
-      Matter.Body.setPosition(ceiling, { x: newWidth / 2, y: -1000 });
-      Matter.Body.setPosition(leftWall, { x: -50, y: newHeight / 2 });
-      Matter.Body.setPosition(rightWall, { x: newWidth + 50, y: newHeight / 2 });
+      Body.setPosition(ground, {
+        x: newWidth / 2,
+        y: newHeight + 40,
+      });
 
-      // Update shelf
-      const newShelfWidth = newWidth > 768 ? 600 : 300;
-      const newShelfY = newHeight * 0.5;
-      Matter.Body.setPosition(shelf, { x: newWidth / 2, y: newShelfY });
-      // To properly resize the shelf body, we'd need to scale it, 
-      // but moving it is usually sufficient for this effect.
+      Body.setPosition(leftWall, {
+        x: -40,
+        y: newHeight / 2,
+      });
+
+      Body.setPosition(rightWall, {
+        x: newWidth + 40,
+        y: newHeight / 2,
+      });
     };
 
     window.addEventListener("resize", handleResize);
 
+    // =========================
+    // CLEANUP
+    // =========================
     return () => {
       window.removeEventListener("resize", handleResize);
+
       Render.stop(render);
+
       Runner.stop(runner);
+
       Engine.clear(engine);
+
       Composite.clear(engine.world, false);
     };
-  }, []);
+  }, [theme, SKILLS]);
 
   return (
-    <div
-      ref={containerRef}
-      className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
-    >
-      <canvas
-        ref={canvasRef}
-        className="block pointer-events-auto opacity-100"
-      />
+    <div ref={containerRef} className="absolute inset-0 z-0 overflow-hidden">
+      <canvas ref={canvasRef} className="w-full h-full" />
     </div>
   );
 }

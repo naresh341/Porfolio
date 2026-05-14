@@ -2,6 +2,7 @@
 import Lanyard from "@/components/Lanyard";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function AboutMe() {
   return (
@@ -15,22 +16,64 @@ export default function AboutMe() {
       />
 
       <div className="max-w-[1400px] mx-auto relative z-10">
+        {/* Crossing Decorative Lines */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <motion.div 
+            initial={{ rotate: -45, scaleX: 0, opacity: 0 }}
+            whileInView={{ scaleX: 1, opacity: 0.1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.5, ease: "circOut" }}
+            className="absolute top-1/2 left-0 w-full h-px bg-foreground origin-left"
+          />
+          <motion.div 
+            initial={{ rotate: 45, scaleX: 0, opacity: 0 }}
+            whileInView={{ scaleX: 1, opacity: 0.1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.5, ease: "circOut", delay: 0.2 }}
+            className="absolute top-1/2 left-0 w-full h-px bg-foreground origin-right"
+          />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center">
           
           {/* Left Side: Text Content (7 Columns) */}
           <div className="lg:col-span-7 space-y-12 order-2 lg:order-1">
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <span className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground">
+                <motion.span 
+                  initial={{ x: -20, opacity: 0 }}
+                  whileInView={{ x: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground"
+                >
                   A LITTLE ABOUT ME
-                </span>
-                <span className="h-px w-12 bg-border/50" />
+                </motion.span>
+                <motion.span 
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  className="h-px w-12 bg-border/50 origin-left" 
+                />
               </div>
-              <h3 className="text-5xl md:text-7xl font-black tracking-tighter leading-none">
-                Nice to meet you. <br /> I&apos;m{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.3)]">
-                  Naresh
-                </span>
+              <h3 className="text-[clamp(2rem,7vw,4.5rem)] font-black tracking-tighter leading-[1.1]">
+                <motion.span
+                  initial={{ y: 30, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  className="block"
+                >
+                  Nice to meet you.
+                </motion.span>
+                <motion.span
+                  initial={{ y: 30, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+                  className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500"
+                >
+                  I&apos;m Naresh
+                </motion.span>
               </h3>
               <p className="text-sm font-mono tracking-widest uppercase text-muted-foreground/80">
                 Full Stack Developer & UI/UX Enthusiast
