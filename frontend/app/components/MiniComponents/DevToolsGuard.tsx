@@ -55,7 +55,7 @@ export function DevToolsGuard({ children }: { children: React.ReactNode }) {
             <p className="text-white/40 text-sm leading-relaxed mt-1">
               Curious about how this was built?
               <br />
-              Let's connect and chat about it.
+              Let&apos;s connect and chat about it.
             </p>
           </div>
 

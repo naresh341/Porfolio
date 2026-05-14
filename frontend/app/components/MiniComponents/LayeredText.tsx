@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useEffect, useRef } from "react"
-import { gsap } from "gsap"
-import type React from "react"
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import type React from "react";
 
 interface LayeredTextProps {
-  lines?: Array<{ top: string; bottom: string }>
-  fontSize?: string
-  fontSizeMd?: string
-  lineHeight?: number
-  lineHeightMd?: number
-  className?: string
+  lines?: Array<{ top: string; bottom: string }>;
+  fontSize?: string;
+  fontSizeMd?: string;
+  lineHeight?: number;
+  lineHeightMd?: number;
+  className?: string;
 }
 
 export function LayeredText({
@@ -29,51 +29,51 @@ export function LayeredText({
   lineHeightMd = 35,
   className = "",
 }: LayeredTextProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const timelineRef = useRef<gsap.core.Timeline>()
+  const containerRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
 
   const calculateTranslateX = (index: number) => {
-    const baseOffset = 35
-    const baseOffsetMd = 20
-    const centerIndex = Math.floor(lines.length / 2)
+    const baseOffset = 35;
+    const baseOffsetMd = 20;
+    const centerIndex = Math.floor(lines.length / 2);
     return {
       desktop: (index - centerIndex) * baseOffset,
       mobile: (index - centerIndex) * baseOffsetMd,
-    }
-  }
+    };
+  };
 
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current) return;
 
-    const container = containerRef.current
-    const paragraphs = container.querySelectorAll("p")
+    const container = containerRef.current;
+    const paragraphs = container.querySelectorAll("p");
 
-    timelineRef.current = gsap.timeline({ paused: true })
+    timelineRef.current = gsap.timeline({ paused: true });
 
     timelineRef.current.to(paragraphs, {
       y: window.innerWidth >= 768 ? -60 : -35,
       duration: 0.8,
       ease: "power2.out",
       stagger: 0.08,
-    })
+    });
 
     const handleMouseEnter = () => {
-      timelineRef.current?.play()
-    }
+      timelineRef.current?.play();
+    };
 
     const handleMouseLeave = () => {
-      timelineRef.current?.reverse()
-    }
+      timelineRef.current?.reverse();
+    };
 
-    container.addEventListener("mouseenter", handleMouseEnter)
-    container.addEventListener("mouseleave", handleMouseLeave)
+    container.addEventListener("mouseenter", handleMouseEnter);
+    container.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
-      container.removeEventListener("mouseenter", handleMouseEnter)
-      container.removeEventListener("mouseleave", handleMouseLeave)
-      timelineRef.current?.kill()
-    }
-  }, [lines])
+      container.removeEventListener("mouseenter", handleMouseEnter);
+      container.removeEventListener("mouseleave", handleMouseLeave);
+      timelineRef.current?.kill();
+    };
+  }, [lines]);
 
   return (
     <div
@@ -83,7 +83,7 @@ export function LayeredText({
     >
       <ul className="list-none p-0 m-0 flex flex-col items-center">
         {lines.map((line, index) => {
-          const translateX = calculateTranslateX(index)
+          const translateX = calculateTranslateX(index);
           return (
             <li
               key={index}
@@ -110,7 +110,7 @@ export function LayeredText({
                   {
                     height: `${lineHeight}px`,
                     lineHeight: `${lineHeight}px`,
-                    padding: '0 15px'
+                    padding: "0 15px",
                   } as React.CSSProperties
                 }
               >
@@ -122,16 +122,16 @@ export function LayeredText({
                   {
                     height: `${lineHeight}px`,
                     lineHeight: `${lineHeight}px`,
-                    padding: '0 15px'
+                    padding: "0 15px",
                   } as React.CSSProperties
                 }
               >
                 {line.bottom}
               </p>
             </li>
-          )
+          );
         })}
       </ul>
     </div>
-  )
+  );
 }

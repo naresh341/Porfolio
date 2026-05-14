@@ -2,48 +2,89 @@
 
 import { projectService, webhookService } from "@/app/services/api";
 import { useGSAP } from "@gsap/react";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ExternalLink, GitBranch, Loader2 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { TECH_ICONS } from "../MiniComponents/TechIcons";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /* ─── types ─────────────────────────────────────────────────────── */
-interface Project {
-  id: number;
-  title: string;
-  name: string;
-  tagline: string;
-  description: string;
+// interface Project {
+//   name?: string;
+//   title?: string;
+//   github_link?: string;
+//   github?: string;
+//   live_link?: string;
+//   live?: string;
+//   tagline?: string;
+//   color?: string;
+//   tech_stack?: string;
+//   // Use index signature if there are other dynamic properties
+//   [key: string]: unknown;
+// }
+
+// function fmt(p: RawProject): Project {
+//   return {
+//     ...p,
+//     name: p.name || p.title || "project",
+//     github: p.github_link || p.github,
+//     live: p.live_link || p.live,
+//     tagline: p.tagline || "Enterprise Solution",
+//     color: p.color || "#6E6E6E",
+//     tags:
+//       typeof p.tech_stack === "string"
+//         ? p.tech_stack
+//             .split(",")
+//             .map((s: string) => s.trim())
+//             .filter(Boolean)
+//         : [],
+//   } as Project;
+// }
+
+// 1. The Raw data coming from your FastAPI backend (Singapore Neon DB)
+// 1. The Raw data from your FastAPI backend
+interface RawProject {
+  name?: string;
+  title?: string;
+  github_link?: string;
   github?: string;
+  live_link?: string;
   live?: string;
-  image_url?: string;
+  tagline?: string;
+  color?: string;
+  tech_stack?: string;
+  [key: string]: unknown;
+}
+interface Project {
+  name: string;
+  github: string;
+  live: string;
+  tagline: string;
   color: string;
   tags: string[];
+  [key: string]: unknown;
 }
-
-function fmt(p: any): Project {
+function fmt(p: RawProject): Project {
   return {
     ...p,
     name: p.name || p.title || "project",
-    github: p.github_link || p.github,
-    live: p.live_link || p.live,
+    github: p.github_link || p.github || "#",
+    live: p.live_link || p.live || "#",
     tagline: p.tagline || "Enterprise Solution",
     color: p.color || "#6E6E6E",
-    tags: p.tech_stack
-      ? p.tech_stack
-          .split(",")
-          .map((s: string) => s.trim())
-          .filter(Boolean)
-      : [],
-  };
+    tags:
+      typeof p.tech_stack === "string"
+        ? p.tech_stack
+            .split(",")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+        : [],
+  } as Project;
 }
-
 /* ─── Project Cursor ─── */
 const ProjectCursor = ({
   color,
@@ -66,7 +107,7 @@ const ProjectCursor = ({
     <motion.div
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: isVisible ? 1 : 0, opacity: isVisible ? 1 : 0 }}
-      className="fixed pointer-events-none z-[100] flex items-center justify-center"
+      className="fixed pointer-events-none z-100 flex items-center justify-center"
       style={{
         left: pos.x,
         top: pos.y,
@@ -75,7 +116,7 @@ const ProjectCursor = ({
       }}
     >
       <div
-        className="relative w-[100px] h-[100px] rounded-full flex items-center justify-center overflow-hidden"
+        className="relative w-25 h-25 rounded-full flex items-center justify-center overflow-hidden"
         style={{ background: color }}
       >
         <div className="absolute inset-0 animate-[spin_8s_linear_infinite]">

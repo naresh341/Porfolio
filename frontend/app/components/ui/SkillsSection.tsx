@@ -34,10 +34,16 @@ const SKILLS_ALL = [
 
 const PARTICLE_COUNT = 4000;
 
-const SHAPE_MAP: Record<
-  string,
-  "sphere" | "ring" | "helix" | "star" | "cube" | "wave"
-> = {
+type ShapeName =
+  | "sphere"
+  | "ring"
+  | "helix"
+  | "star"
+  | "cube"
+  | "wave"
+  | "cylinder";
+
+const SHAPE_MAP: Record<string, ShapeName> = {
   ReactJS: "ring",
   "Next.JS": "cube",
   TypeScript: "sphere",
@@ -53,7 +59,7 @@ const SHAPE_MAP: Record<
   Python: "wave",
   FastAPI: "helix",
   "Three.js": "sphere",
-} as any;
+};
 
 function buildPositions() {
   const sphere = new Float32Array(PARTICLE_COUNT * 3);
@@ -150,10 +156,12 @@ function InteractiveParticles({
   const pointsRef = useRef<THREE.Points>(null!);
   const { mouse, viewport } = useThree();
   const shapes = useMemo(() => buildPositions(), []);
-  const currentPos = useMemo(() => new Float32Array(shapes.sphere), [shapes]); // Initialize with sphere
+  // const currentPos = useMemo(() => new Float32Array(shapes.sphere), [shapes]); // Initialize with sphere
+  const currentPosRef = useRef(new Float32Array(shapes.sphere));
+  const currentPos = currentPosRef.current;
 
   useFrame((_, delta) => {
-    const target = (shapes as any)[activeShape] ?? shapes.sphere;
+    const target = shapes[activeShape as keyof typeof shapes] ?? shapes.sphere;
     const lerpFactor = Math.min(delta * 4, 1); // Dynamic lerp
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -206,7 +214,7 @@ function InteractiveParticles({
         <bufferAttribute
           attach="attributes-position"
           count={PARTICLE_COUNT}
-          array={currentPos}
+          args={[currentPosRef.current, 3]}
           itemSize={3}
         />
       </bufferGeometry>
@@ -228,8 +236,8 @@ export default function SkillsSection() {
   const { theme } = useTheme();
 
   const activeShape = hoveredSkill
-    ? ((SHAPE_MAP as any)[hoveredSkill] ?? "sphere")
-    : ((SHAPE_MAP as any)[activeSkill] ?? "sphere");
+    ? (SHAPE_MAP[hoveredSkill as keyof typeof SHAPE_MAP] ?? "sphere")
+    : (SHAPE_MAP[activeSkill as keyof typeof SHAPE_MAP] ?? "sphere");
 
   const activeSkillData = SKILLS_ALL.find(
     (s) => s.name === (hoveredSkill ?? activeSkill),
