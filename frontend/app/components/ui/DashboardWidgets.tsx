@@ -2,21 +2,15 @@
 
 import { githubService, spotifyService } from "@/app/services/api";
 import { useGSAP } from "@gsap/react";
+import { motion, Variants } from "framer-motion";
 import gsap from "gsap";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { GitHubCalendar } from "react-github-calendar";
-import { motion } from "framer-motion";
-import {
-  FaArrowRight,
-  FaGithub,
-  FaLinkedinIn,
-  FaPython,
-  FaReact,
-} from "react-icons/fa6";
-import { SiFastapi, SiSpotify } from "react-icons/si";
-import Image from "next/image";
+import { FaGithub, FaLinkedinIn } from "react-icons/fa6";
+import { SiSpotify } from "react-icons/si";
 const GITHUB_USERNAME = "naresh341";
 
 type GitHubPublicEvent = {
@@ -176,15 +170,15 @@ export const SectionHero = ({
       className="relative w-full min-h-[95vh] flex flex-col items-center justify-center bg-background overflow-hidden border-b border-border/10"
     >
       {/* Cinematic Shadowy Rings & Glows */}
-      <div className="sh-ring absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110vw] h-[110vw] max-w-[1400px] max-h-[1400px] rounded-full border border-white/[0.02] blur-[1px] pointer-events-none" />
-      <div className="sh-ring absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] h-[85vw] max-w-[1000px] max-h-[1000px] rounded-full border border-white/[0.015] blur-[2px] pointer-events-none" />
-      <div className="sh-ring absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] rounded-full border border-white/[0.01] blur-[3px] pointer-events-none" />
+      <div className="sh-ring absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110vw] h-[110vw] max-w-350 max-h-350 rounded-full border border-white/2 blur-[1px] pointer-events-none" />
+      <div className="sh-ring absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] h-[85vw] max-w-250 max-h-250 rounded-full border border-white/2 blur-[2px] pointer-events-none" />
+      <div className="sh-ring absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] max-w-175 max-h-175 rounded-full border border-white/2 blur-[3px] pointer-events-none" />
 
       {/* Central Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] bg-white/[0.02] blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] bg-white/2 blur-[120px] rounded-full pointer-events-none" />
 
       {/* Subtle Grid Overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.015)_0%,_transparent_80%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.015)_0%,transparent_80%)] pointer-events-none" />
 
       <div className="relative z-10 text-center px-4 space-y-12 md:space-y-16">
         <div className="space-y-6">
@@ -281,13 +275,13 @@ export const GithubActivity = () => {
         </span>
         <h3 className="text-5xl md:text-7xl font-bold tracking-tighter">
           GitHub Activity <br />{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 italic font-playfair font-light">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-500 to-purple-500 italic font-playfair font-light">
             && Open Source
           </span>
         </h3>
       </div>
 
-      <div className="max-w-[1400px] mx-auto grid grid-cols-1 xl:grid-cols-2 gap-12 xl:gap-16 items-start">
+      <div className="max-w-350 mx-auto grid grid-cols-1 xl:grid-cols-2 gap-12 xl:gap-16 items-start">
         <div className="w-full overflow-x-auto pb-4 flex justify-center xl:justify-end">
           <div className="p-8 rounded-[2rem] border border-border/40 bg-card/5 backdrop-blur-sm shadow-2xl">
             <GitHubCalendar
@@ -366,7 +360,7 @@ export const GithubActivity = () => {
   );
 };
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -374,22 +368,32 @@ const containerVariants = {
   },
 };
 
-const cardVariants = {
-  hidden: { y: 50, opacity: 0 },
+const cardVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+    transition: {
+      duration: 0.8,
+      ease: [0.22, 1, 0.36, 1], // TypeScript will now accept this array
+    },
   },
 };
-
+interface SpotifyData {
+  isPlaying: boolean;
+  title: string;
+  artist: string;
+  album: string;
+  albumImageUrl: string;
+  songUrl: string;
+}
 export const BentoWidgets = () => {
   const [latestCommit, setLatestCommit] = useState<{
     message: string;
     repo: string;
     date: string;
   } | null>(null);
-  const [spotifyData, setSpotifyData] = useState<any>(null);
+  const [spotifyData, setSpotifyData] = useState<SpotifyData | null>(null);
 
   useEffect(() => {
     const fetchGithub = async () => {
@@ -412,7 +416,14 @@ export const BentoWidgets = () => {
         const data = await spotifyService.getNowPlaying();
         setSpotifyData(data);
       } catch (err) {
-        setSpotifyData({ isPlaying: false });
+        setSpotifyData({
+          isPlaying: false,
+          title: "",
+          artist: "",
+          album: "",
+          albumImageUrl: "",
+          songUrl: "",
+        });
       }
     };
 
@@ -442,7 +453,7 @@ export const BentoWidgets = () => {
         </p>
         <h2 className="text-[clamp(2rem,7vw,4.5rem)] font-bold tracking-tight leading-[1.1]">
           Decoding logic <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-500 italic font-serif font-light">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-pink-500 to-orange-500 italic font-serif font-light">
             && the lyrics
           </span>
         </h2>
@@ -459,7 +470,7 @@ export const BentoWidgets = () => {
         <motion.div
           variants={cardVariants}
           whileHover={{ y: -5, transition: { duration: 0.3 } }}
-          className="group relative bg-card border border-border rounded-[2rem] p-10 h-[320px] flex flex-col justify-between overflow-hidden transition-all duration-500 hover:border-emerald-500/40 hover:shadow-[0_0_30px_-15px_rgba(16,185,129,0.3)]"
+          className="group relative bg-card border border-border rounded-[2rem] p-10 h-80 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:border-emerald-500/40 hover:shadow-[0_0_30px_-15px_rgba(16,185,129,0.3)]"
         >
           {/* Subtle Background Glow */}
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/5 blur-[80px] group-hover:bg-emerald-500/10 transition-all duration-700" />
@@ -470,7 +481,7 @@ export const BentoWidgets = () => {
                 <FaGithub className="w-5 h-5" />
               </div>
               <span className="text-sm font-semibold tracking-tight text-muted-foreground">
-                Naresh's Github
+                Naresh &apos;s Github
               </span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
@@ -510,7 +521,7 @@ export const BentoWidgets = () => {
         <motion.div
           variants={cardVariants}
           whileHover={{ y: -5, transition: { duration: 0.3 } }}
-          className="group relative bg-card border border-border rounded-[2rem] p-10 h-[320px] flex flex-col justify-between overflow-hidden transition-all duration-500 hover:border-[#1DB954]/40 hover:shadow-[0_0_30px_-15px_rgba(29,185,84,0.3)]"
+          className="group relative bg-card border border-border rounded-[2rem] p-10 h-80 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:border-[#1DB954]/40 hover:shadow-[0_0_30px_-15px_rgba(29,185,84,0.3)]"
         >
           <div
             className="absolute inset-0 opacity-[0.03] grayscale group-hover:opacity-[0.08] group-hover:grayscale-0 transition-all duration-1000 scale-110 group-hover:scale-100"
@@ -529,11 +540,11 @@ export const BentoWidgets = () => {
                 {spotifyData?.isPlaying ? "Now Playing" : "Recently Played"}
               </span>
             </div>
-            <div className="flex gap-[3px] items-end h-3">
+            <div className="flex gap-0.75 items-end h-3">
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className={`w-[2px] bg-[#1DB954] rounded-full animate-audio-bar bar-${i}`}
+                  className={`w-0.5 bg-[#1DB954] rounded-full animate-audio-bar bar-${i}`}
                 />
               ))}
             </div>
@@ -555,7 +566,7 @@ export const BentoWidgets = () => {
 
           <div className="absolute bottom-8 right-8 w-40 h-40 pointer-events-none">
             <div
-              className={`absolute bottom-4 right-4 w-28 h-28 rounded-full border-[10px] border-border/50 bg-[#121212] shadow-2xl z-0 transition-opacity duration-500 ${spotifyData?.isPlaying || true ? "animate-spin-slow" : "opacity-40"}`}
+              className={`absolute bottom-4 right-4 w-28 h-28 rounded-full border-10 border-border/50 bg-[#121212] shadow-2xl z-0 transition-opacity duration-500 ${spotifyData?.isPlaying || true ? "animate-spin-slow" : "opacity-40"}`}
             >
               <div className="absolute inset-0 rounded-full border border-white/5" />
               <div className="absolute inset-[35%] rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center">

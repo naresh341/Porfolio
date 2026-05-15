@@ -1,14 +1,14 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useRef, useState } from "react";
+import { profileService } from "@/app/services/api";
 import { useGSAP } from "@gsap/react";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Mail, MapPin, Download, Send, ArrowUpRight } from "lucide-react";
-import { FaGithub, FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
+import { Download, Send } from "lucide-react";
 import Link from "next/link";
-import { profileService } from "@/app/services/api";
+import { useRef, useState } from "react";
+import { FaGithub, FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -167,11 +167,8 @@ export default function Contact() {
         <span className="flex-1 h-px bg-border/30" />
       </div>
 
-      <div
-        ref={headingRef}
-        className="relative z-10 px-6 lg:px-16 pb-16"
-      >
-        <motion.h2 
+      <div ref={headingRef} className="relative z-10 px-6 lg:px-16 pb-16">
+        <motion.h2
           initial={{ y: 50, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           viewport={{ once: true }}
@@ -187,7 +184,6 @@ export default function Contact() {
 
       {/* ── two-column body ──────────────────────────────────────────────── */}
       <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 px-6 lg:px-16 pb-20 gap-16 lg:gap-0">
-        
         {/* ── LEFT: info (5 Columns) ─────────────────────────────────────────────────── */}
         <div
           ref={leftRef}
@@ -195,8 +191,13 @@ export default function Contact() {
         >
           <div className="space-y-8">
             <p className="c-left-item text-xl md:text-2xl text-muted-foreground leading-relaxed font-light">
-              Have a groundbreaking idea? Let&apos;s collaborate to turn it into a 
-              <span className="text-foreground font-medium"> digital reality</span>.
+              Have a groundbreaking idea? Let&apos;s collaborate to turn it into
+              a
+              <span className="text-foreground font-medium">
+                {" "}
+                digital reality
+              </span>
+              .
             </p>
 
             <div className="c-left-item flex flex-col gap-6">
@@ -204,15 +205,21 @@ export default function Contact() {
                 href="mailto:bhati.naresh43@gmail.com"
                 className="group w-fit flex flex-col gap-1"
               >
-                <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/60">Email Me</span>
+                <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/60">
+                  Email Me
+                </span>
                 <span className="text-2xl font-bold border-b-2 border-transparent group-hover:border-primary transition-all">
                   bhati.naresh43@gmail.com
                 </span>
               </a>
 
               <div className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/60">Location</span>
-                <span className="text-lg font-medium text-foreground/80">Mumbai, India · IST (UTC+5:30)</span>
+                <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/60">
+                  Location
+                </span>
+                <span className="text-lg font-medium text-foreground/80">
+                  Mumbai, India · IST (UTC+5:30)
+                </span>
               </div>
             </div>
           </div>
@@ -231,23 +238,22 @@ export default function Contact() {
                 </Link>
               ))}
             </div>
-            
+
             <a
               href={profileService.getResumeUrl()}
               download
               className="group inline-flex items-center gap-3 px-6 py-3 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all"
             >
               <Download className="w-4 h-4 text-primary" />
-              <span className="text-sm font-bold uppercase tracking-widest">Download CV</span>
+              <span className="text-sm font-bold uppercase tracking-widest">
+                Download CV
+              </span>
             </a>
           </div>
         </div>
 
         {/* ── RIGHT: form (7 Columns) ────────────────────────────────────────────────── */}
-        <div
-          ref={rightRef}
-          className="lg:col-span-7"
-        >
+        <div ref={rightRef} className="lg:col-span-7">
           <div className="relative p-8 md:p-12 rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-xl shadow-2xl overflow-hidden">
             {/* Form Glow */}
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 blur-[100px] pointer-events-none" />
@@ -255,7 +261,9 @@ export default function Contact() {
             <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground/60 ml-2">Name</label>
+                  <label className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground/60 ml-2">
+                    Name
+                  </label>
                   <input
                     name="name"
                     required
@@ -266,7 +274,9 @@ export default function Contact() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground/60 ml-2">Email</label>
+                  <label className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground/60 ml-2">
+                    Email
+                  </label>
                   <input
                     name="email"
                     required
@@ -279,7 +289,9 @@ export default function Contact() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground/60 ml-2">Project Type</label>
+                <label className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground/60 ml-2">
+                  Project Type
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {PROJECT_TYPES.map((type) => (
                     <button
@@ -299,7 +311,9 @@ export default function Contact() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground/60 ml-2">Message</label>
+                <label className="text-[10px] font-mono tracking-[0.4em] uppercase text-muted-foreground/60 ml-2">
+                  Message
+                </label>
                 <textarea
                   name="message"
                   required
@@ -316,7 +330,9 @@ export default function Contact() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={`p-4 rounded-2xl text-xs font-bold text-center ${
-                    status.type === "success" ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
+                    status.type === "success"
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "bg-red-500/10 text-red-400"
                   }`}
                 >
                   {status.msg}
@@ -332,7 +348,7 @@ export default function Contact() {
                 <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                   <div className="flow-light w-[150px] h-[80px]" />
                 </div>
-                
+
                 {/* Content Overlay */}
                 <div className="relative z-10 w-full h-full rounded-[14px] bg-background/90 backdrop-blur-xl flex items-center justify-center gap-4 border border-white/5 group-hover:bg-background/70 transition-all duration-300">
                   <span className="text-sm font-black uppercase tracking-[0.3em] text-foreground">

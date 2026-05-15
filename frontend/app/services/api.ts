@@ -38,7 +38,7 @@
   };
 
   export const profileService = {
-    sendContactMessage: async (contactData: { name: string; email: string; message: string }) => {
+    sendContactMessage: async (contactData: { name: string; email: string; message: string;projectType: string; }) => {
       const response = await apiClient.post('/api/contact', contactData);
       return response.data;
     },

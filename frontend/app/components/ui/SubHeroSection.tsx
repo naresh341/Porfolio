@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import Clock from "./subhero/Clock";
 import { ContactCard } from "./subhero/ContactCard";
 import CubeCard from "./subhero/CubeCard";
@@ -8,7 +8,7 @@ import InterfaceCard from "./subhero/InterfaceCard";
 import { LuminaCoreCard } from "./subhero/LuminaCoreCard";
 import { PrecisionScannerCard } from "./subhero/PrecisionScannerCard";
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -18,7 +18,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { y: 40, opacity: 0 },
   visible: {
     y: 0,

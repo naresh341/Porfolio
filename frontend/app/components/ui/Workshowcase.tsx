@@ -13,43 +13,25 @@ import { TECH_ICONS } from "../MiniComponents/TechIcons";
 gsap.registerPlugin(ScrollTrigger);
 
 /* ─── types ─────────────────────────────────────────────────────── */
-// interface Project {
-//   name?: string;
-//   title?: string;
-//   github_link?: string;
-//   github?: string;
-//   live_link?: string;
-//   live?: string;
-//   tagline?: string;
-//   color?: string;
-//   tech_stack?: string;
-//   // Use index signature if there are other dynamic properties
-//   [key: string]: unknown;
-// }
-
-// function fmt(p: RawProject): Project {
-//   return {
-//     ...p,
-//     name: p.name || p.title || "project",
-//     github: p.github_link || p.github,
-//     live: p.live_link || p.live,
-//     tagline: p.tagline || "Enterprise Solution",
-//     color: p.color || "#6E6E6E",
-//     tags:
-//       typeof p.tech_stack === "string"
-//         ? p.tech_stack
-//             .split(",")
-//             .map((s: string) => s.trim())
-//             .filter(Boolean)
-//         : [],
-//   } as Project;
-// }
-
-// 1. The Raw data coming from your FastAPI backend (Singapore Neon DB)
 // 1. The Raw data from your FastAPI backend
+interface Project {
+  id: string | number;
+  name: string;
+  title: string;
+  description: string;
+  github: string;
+  live: string;
+  tagline: string;
+  color: string;
+  tags: string[];
+  image_url?: string;
+}
+
 interface RawProject {
+  id?: string | number;
   name?: string;
   title?: string;
+  description?: string;
   github_link?: string;
   github?: string;
   live_link?: string;
@@ -57,20 +39,14 @@ interface RawProject {
   tagline?: string;
   color?: string;
   tech_stack?: string;
+  image_url?: string;
   [key: string]: unknown;
 }
-interface Project {
-  name: string;
-  github: string;
-  live: string;
-  tagline: string;
-  color: string;
-  tags: string[];
-  [key: string]: unknown;
-}
+
 function fmt(p: RawProject): Project {
   return {
     ...p,
+    id: p.id || crypto.randomUUID(),
     name: p.name || p.title || "project",
     github: p.github_link || p.github || "#",
     live: p.live_link || p.live || "#",
@@ -231,8 +207,6 @@ export default function Workshowcase() {
     );
   }
   if (!projects.length) return null;
-
-  const N = projects.length;
 
   return (
     <section
