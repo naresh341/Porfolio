@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/app/Context/ThemeContext";
 import { usePathname, useRouter } from "next/navigation";
+import { profileService } from "@/app/services/api";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -74,6 +75,22 @@ const Navbar = () => {
     );
   });
 
+  const handleDownload = async () => {
+    try {
+      const res = await profileService.getResumeUrl();
+      const link = document.createElement("a");
+      link.href = res;
+      link.setAttribute(
+        "download",
+        "NareshBhati_FullStack_Developer_Resume.pdf",
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
   return (
     <>
       <div className="sticky top-0 left-0 w-full z-40 py-4 flex justify-between items-center">
@@ -117,7 +134,7 @@ const Navbar = () => {
         </button>
       </div>
 
-      <div 
+      <div
         className={`fixed top-4 left-0 w-full z-[100] px-5 flex pointer-events-none transition-[justify-content] duration-700 ease-out ${
           isScrolled ? "justify-center" : "justify-end"
         }`}
@@ -134,46 +151,56 @@ const Navbar = () => {
           }}
           className="pointer-events-auto"
         >
-        <div className="flex items-center bg-card/80 backdrop-blur-xl border border-border rounded-xl shadow-xl overflow-hidden">
-          <LimelightNav
-            items={navItems}
-            defaultActiveIndex={activeIndex === -1 ? 0 : activeIndex}
-          />
+          <div className="flex items-center bg-card/80 backdrop-blur-xl border border-border rounded-xl shadow-xl overflow-hidden">
+            <LimelightNav
+              items={navItems}
+              defaultActiveIndex={activeIndex === -1 ? 0 : activeIndex}
+            />
 
-          <span className="w-px h-6 bg-border" />
+            <span className="w-px h-6 bg-border" />
 
-          {/* Download Resume Button */}
-          <button
-            onClick={() => {
-              try {
-                window.open("http://localhost:8000/api/resume/download", "_blank");
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-            className="hidden md:flex h-full px-5 items-center gap-2.5 transition-colors border-x border-border group hover:bg-primary/5 dark:hover:bg-primary/10"
-          >
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background shadow-md group-hover:scale-110 transition-transform duration-300">
-               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-y-[1px] transition-transform"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">
-              Resume
-            </span>
-          </button>
+            {/* Download Resume Button */}
+            <button
+              onClick={handleDownload}
+              className="hidden md:flex h-full px-5 items-center gap-2.5 transition-colors border-x border-border group  "
+            >
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background shadow-md group-hover:scale-110 transition-transform duration-300">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="group-hover:translate-y-[1px] transition-transform"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" x2="12" y1="15" y2="3" />
+                </svg>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">
+                Resume
+              </span>
+            </button>
 
-          <span className="w-px h-6 bg-border" />
+            <span className="w-px h-6 bg-border" />
 
-          <button
-            onClick={toggleTheme}
-            className="w-12 h-12 flex items-center justify-center hover:bg-accent transition"
-          >
-            {mounted && (theme === "dark" ? (
-              <Sun className="w-5 h-5 text-foreground" />
-            ) : (
-              <Moon className="w-5 h-5 text-foreground" />
-            ))}
-          </button>
-        </div>
+            <button
+              onClick={toggleTheme}
+              className="w-12 h-12 flex items-center justify-center hover:bg-accent transition"
+            >
+              {mounted &&
+                (theme === "dark" ? (
+                  <Sun className="w-5 h-5 text-foreground" />
+                ) : (
+                  <Moon className="w-5 h-5 text-foreground" />
+                ))}
+            </button>
+          </div>
         </motion.div>
       </div>
     </>

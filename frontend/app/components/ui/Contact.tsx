@@ -246,7 +246,7 @@ export default function Contact() {
             >
               <Download className="w-4 h-4 text-primary" />
               <span className="text-sm font-bold uppercase tracking-widest">
-                Download CV
+                Download Resume
               </span>
             </a>
           </div>

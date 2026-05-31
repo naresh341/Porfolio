@@ -14,7 +14,6 @@ from app.repositories.projectRepo import ProjectRepository
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.utils.github_og import generate_github_og_image
 
 logger = logging.getLogger(__name__)
 
